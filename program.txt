@@ -1,0 +1,12 @@
+x is 3
+y is x times 4
+print(x). print(y)
+
+z is y times x plus 12
+
+if z is? 3 do
+    print(x)
+    print(y)
+end else
+    while z > 3 do print(z). z is z minus 1. end
+end
