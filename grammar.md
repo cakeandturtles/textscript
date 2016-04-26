@@ -1,4 +1,5 @@
 operator : PLUS | TIMES | MINUS | DIVIDED_BY
+
 primary : NUMBER
         | VARIABLE
         | VARIABLE OPAREN optExpressionList CPAREN
