@@ -1,0 +1,13 @@
+const END_OF_INPUT : string = "END_OF_INPUT";
+const OPAREN : string = "(";
+const CPAREN : string = ")";
+const COMMA : string = ",";
+const PLUS : string = "plus";
+const MINUS : string = "minus";
+const TIMES : string = "times";
+const DIVIDES : string = "divided by";
+const LESS_THAN : string = "less than";
+const GREATER_THAN : string = "greater than";
+const EQUAL_TO : string = "equals?";
+const ASSIGN : string = "is";
+const PERIOD : string = ".";

@@ -1,0 +1,13 @@
+var END_OF_INPUT = "END_OF_INPUT";
+var OPAREN = "(";
+var CPAREN = ")";
+var COMMA = ",";
+var PLUS = "plus";
+var MINUS = "minus";
+var TIMES = "times";
+var DIVIDES = "divided by";
+var LESS_THAN = "less than";
+var GREATER_THAN = "greater than";
+var EQUAL_TO = "equals?";
+var ASSIGN = "is";
+var PERIOD = ".";
