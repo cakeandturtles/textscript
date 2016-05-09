@@ -1,16 +1,26 @@
 <html>
 <head>
 <title>textscript</title>
-<script src="javascript/Types.js"/>
-<script src="javascript/InputFile.js"/>
-<script src="javascript/Lexer.js"/>
-<script src="javascript/Scanner.js"/>
+<style type="text/css">
+    #program_txt{
+        width: 480px;
+        height: 240px;
+    }
+</style>
 
-<script src="javascript/main.js"/>
+<script src="javascript/Types.js"></script>
+<script src="javascript/InputFile.js"></script>
+<script src="javascript/Lexer.js"></script>
+<script src="javascript/Scanner.js"></script>
+
+<script src="javascript/main.js"></script>
 </head>
 <body>
-    <textarea id="program_txt">
-    </textarea>
+    <textarea id="program_txt">x is 3.
+#test value of variable x
+if x < 4 do
+print x
+end</textarea>
     <br/>
     <input id="program_run" type="button" value="run program" />
 <script>

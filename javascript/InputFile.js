@@ -5,10 +5,18 @@ var InputFile = (function () {
         this.failed = false;
     }
     InputFile.prototype.backup = function () {
-        this.char_index = this.char_index - 1;
+        this.char_index--;
     };
     InputFile.prototype.read = function () {
-        return "";
+        if (this.char_index < this.program_txt.length) {
+            var char = this.program_txt[this.char_index];
+            this.char_index++;
+            return char;
+        }
+        else {
+            this.failed = true;
+            return null;
+        }
     };
     return InputFile;
 }());
