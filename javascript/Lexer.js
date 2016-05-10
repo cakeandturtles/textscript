@@ -12,7 +12,7 @@ var Lexer = (function () {
     Lexer.prototype.skipWhitespace = function () {
         var ch;
         ch = this.input.read();
-        while (this.isWhitespace(ch) && ch != "\n") {
+        while (this.isWhitespace(ch) && ch != "\n" && !this.input.failed) {
             ch = this.input.read();
         }
         this.input.backup();
@@ -21,7 +21,7 @@ var Lexer = (function () {
         var ch;
         ch = this.input.read();
         if (ch === "#") {
-            while (ch != "\n") {
+            while (ch != "\n" && !this.input.failed) {
                 ch = this.input.read();
             }
         }
@@ -36,6 +36,17 @@ var Lexer = (function () {
     Lexer.prototype.isLetter = function (ch) {
         return ch.toLowerCase() != ch.toUpperCase();
     };
+    Lexer.prototype.isWordLetter = function (ch, first) {
+        if (this.isWhitespace(ch))
+            return false;
+        if (this.isDigit(ch))
+            return !first;
+        if (this.isLetter(ch))
+            return true;
+        if (ch === "_")
+            return true;
+        return false;
+    };
     Lexer.prototype.isKeyword = function (word) {
         var keywords = [
             "is", "if", "end", "else", "while", "do"
@@ -46,13 +57,56 @@ var Lexer = (function () {
         }
         return false;
     };
+    Lexer.prototype.lexNumber = function () {
+        var num_string = "";
+        var ch = this.input.read();
+        while (this.isDigit(ch) && !this.input.failed) {
+            num_string += ch;
+            ch = this.input.read();
+        }
+        this.input.backup();
+        return new Lexeme(NUMBER, Number(num_string));
+    };
+    Lexer.prototype.lexWord = function () {
+        var word = "";
+        var ch = this.input.read();
+        var first = true;
+        while (this.isWordLetter(ch, first) && !this.input.failed) {
+            word += ch;
+            ch = this.input.read();
+            first = false;
+        }
+        this.input.backup();
+        if (this.isKeyword(word))
+            return new Lexeme(KEYWORD, word);
+        else
+            return new Lexeme(VARIABLE, word);
+    };
+    Lexer.prototype.lexString = function () {
+        var string = "";
+        var quote = this.input.read();
+        var escaped = false;
+        var ch = this.input.read();
+        while ((ch !== quote || escaped) && !this.input.failed) {
+            if (ch !== quote || escaped)
+                string += ch;
+            ch = this.input.read();
+            if (ch === "\\" && !escaped)
+                escaped = true;
+            else
+                escaped = false;
+        }
+        this.input.backup();
+        return new Lexeme(STRING, string);
+    };
     Lexer.prototype.lex = function () {
         var ch;
         this.skipWhitespace();
         this.skipComment();
         ch = this.input.read();
-        if (this.input.failed)
+        if (this.input.failed) {
             return new Lexeme(END_OF_INPUT);
+        }
         switch (ch) {
             case '(':
                 return new Lexeme(OPAREN);
@@ -83,7 +137,7 @@ var Lexer = (function () {
                     this.input.backup();
                     return this.lexNumber();
                 }
-                else if (this.isLetter(ch)) {
+                else if (this.isWordLetter(ch, true)) {
                     this.input.backup();
                     return this.lexWord();
                 }
@@ -93,46 +147,6 @@ var Lexer = (function () {
                 }
         }
         return new Lexeme("UNKNOWN");
-    };
-    Lexer.prototype.lexNumber = function () {
-        var num_string = "";
-        var ch = this.input.read();
-        while (this.isDigit(ch) && !this.input.failed) {
-            num_string += ch;
-            ch = this.input.read();
-        }
-        this.input.backup();
-        return new Lexeme(NUMBER, Number(num_string));
-    };
-    Lexer.prototype.lexWord = function () {
-        var word = "";
-        var ch = this.input.read();
-        while (!this.isWhitespace(ch) && !this.input.failed) {
-            word += ch;
-            ch = this.input.read();
-        }
-        this.input.backup();
-        if (this.isKeyword(word))
-            return new Lexeme(KEYWORD, word);
-        else
-            return new Lexeme(VARIABLE, word);
-    };
-    Lexer.prototype.lexString = function () {
-        var string = "";
-        var quote = this.input.read();
-        var escaped = false;
-        var ch = this.input.read();
-        while ((ch !== quote || escaped) && !this.input.failed) {
-            if (ch !== quote || escaped)
-                string += ch;
-            ch = this.input.read();
-            if (ch === "\\" && !escaped)
-                escaped = true;
-            else
-                escaped = false;
-        }
-        this.input.backup();
-        return new Lexeme(STRING, string);
     };
     return Lexer;
 }());

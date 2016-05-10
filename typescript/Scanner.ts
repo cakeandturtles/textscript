@@ -4,8 +4,9 @@ function scanner(program_txt : string) : void
     var lexer = new Lexer(program_txt);
 
     token = lexer.lex();
+    print(token);
     while (token.type != END_OF_INPUT){
-        print(token);
         token = lexer.lex();
+        print(token);
     }
 }

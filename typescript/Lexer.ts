@@ -15,7 +15,7 @@ class Lexer{
         ch = this.input.read();
         //skip whitespace, but not newline!!!
         //(because newline is important to code)
-        while (this.isWhitespace(ch) && ch != "\n"){
+        while (this.isWhitespace(ch) && ch != "\n" && !this.input.failed){
             ch = this.input.read();
         }
         this.input.backup();
@@ -25,7 +25,7 @@ class Lexer{
         var ch : string;
         ch = this.input.read();
         if (ch === "#"){
-            while (ch != "\n"){
+            while (ch != "\n" && !this.input.failed){
                 ch = this.input.read();
             }
         }
@@ -44,6 +44,15 @@ class Lexer{
         return ch.toLowerCase() != ch.toUpperCase();
     }
 
+    private isWordLetter(ch : string, first : boolean) : boolean {
+        if (this.isWhitespace(ch))  return false;
+        if (this.isDigit(ch)) return !first; //don't allow numbers as first char of word?
+        if (this.isLetter(ch)) return true;
+        if (ch === "_") return true;
+
+        return false;
+    }
+
     private isKeyword(word : string) : boolean{
         var keywords : [string] = [
             "is", "if", "end", "else", "while", "do"
@@ -54,6 +63,56 @@ class Lexer{
         return false;
     }
 
+    private lexNumber() : Lexeme {
+        var num_string : string = "";
+        var ch : string = this.input.read();
+        while (this.isDigit(ch) && !this.input.failed){
+            num_string += ch;
+            ch = this.input.read();
+        }
+        this.input.backup();
+        return new Lexeme(NUMBER, Number(num_string));
+    }
+
+    private lexWord() : Lexeme {
+        var word : string = "";
+        var ch : string = this.input.read();
+        var first : boolean = true;
+        while (this.isWordLetter(ch, first) && !this.input.failed){
+            word += ch;
+            ch = this.input.read();
+            first = false;
+        }
+        this.input.backup();
+
+        if (this.isKeyword(word))
+            return new Lexeme(KEYWORD, word);
+        else return new Lexeme(VARIABLE, word);
+    }
+
+    private lexString() : Lexeme {
+        var string = "";
+        //whether a single or double quote
+        var quote : string = this.input.read();
+        var escaped : boolean = false;
+        var ch : string = this.input.read();
+
+        //TODO:: i think this allows strings with newlines??
+        while ((ch !== quote || escaped) && !this.input.failed){
+            if (ch !== quote || escaped)
+                string += ch;
+            ch = this.input.read();
+
+            //keep track of whether the escape character was used prior to the next character
+            if (ch === "\\" && !escaped)
+                escaped = true;
+            else escaped = false;
+        }
+
+        this.input.backup();
+        return new Lexeme(STRING, string);
+    }
+
     public lex() : Lexeme
     {
         var ch : string;
@@ -61,8 +120,9 @@ class Lexer{
         this.skipComment();
 
         ch = this.input.read();
-        if (this.input.failed)
+        if (this.input.failed){
             return new Lexeme(END_OF_INPUT);
+        }
 
         switch (ch){
             //single character tokens
@@ -106,7 +166,7 @@ class Lexer{
                     this.input.backup();
                     return this.lexNumber();
                 }
-                else if (this.isLetter(ch)){
+                else if (this.isWordLetter(ch, true)){
                     this.input.backup();
                     return this.lexWord();
                 }
@@ -117,53 +177,5 @@ class Lexer{
         }
 
         return new Lexeme("UNKNOWN");
-    }
-
-    private lexNumber() : Lexeme {
-        var num_string : string = "";
-        var ch : string = this.input.read();
-        while (this.isDigit(ch) && !this.input.failed){
-            num_string += ch;
-            ch = this.input.read();
-        }
-        this.input.backup();
-        return new Lexeme(NUMBER, Number(num_string));
-    }
-
-    private lexWord() : Lexeme {
-        var word : string = "";
-        var ch : string = this.input.read();
-        while (!this.isWhitespace(ch) && !this.input.failed){
-            word += ch;
-            ch = this.input.read();
-        }
-        this.input.backup();
-
-        if (this.isKeyword(word))
-            return new Lexeme(KEYWORD, word);
-        else return new Lexeme(VARIABLE, word);
-    }
-
-    private lexString() : Lexeme {
-        var string = "";
-        //whether a single or double quote
-        var quote : string = this.input.read();
-        var escaped : boolean = false;
-        var ch : string = this.input.read();
-
-        //TODO:: i think this allows strings with newlines??
-        while ((ch !== quote || escaped) && !this.input.failed){
-            if (ch !== quote || escaped)
-                string += ch;
-            ch = this.input.read();
-
-            //keep track of whether the escape character was used prior to the next character
-            if (ch === "\\" && !escaped)
-                escaped = true;
-            else escaped = false;
-        }
-
-        this.input.backup();
-        return new Lexeme(STRING, string);
     }
 }
