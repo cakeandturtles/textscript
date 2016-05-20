@@ -67,14 +67,29 @@ var Lexer = (function () {
         return true;
     };
     Lexer.prototype.isKeyword = function (word) {
-        var keywords = [
-            "is", "if", "end", "else", "while", "do", "or", "and"
-        ];
-        for (var i = 0; i < keywords.length; i++) {
-            if (keywords[i] === word)
-                return true;
-        }
-        return false;
+        var lexeme = this.lexKeyword(word);
+        if (lexeme.type === UNKNOWN)
+            return false;
+        return true;
+    };
+    Lexer.prototype.lexKeyword = function (word) {
+        if (word === "is")
+            return new Lexeme(IS);
+        if (word === "if")
+            return new Lexeme(IF);
+        if (word === "end")
+            return new Lexeme(END);
+        if (word === "else")
+            return new Lexeme(ELSE);
+        if (word === "while")
+            return new Lexeme(WHILE);
+        if (word === "do")
+            return new Lexeme(DO);
+        if (word === "or")
+            return new Lexeme(OR);
+        if (word === "and")
+            return new Lexeme(AND);
+        return new Lexeme(UNKNOWN);
     };
     Lexer.prototype.lexNumber = function () {
         var num_string = "";
@@ -111,8 +126,9 @@ var Lexer = (function () {
         this.input.backup();
         if (this.isBoolean(word))
             return new Lexeme(BOOLEAN, this.toBoolean(word));
-        if (this.isKeyword(word))
-            return new Lexeme(KEYWORD, word);
+        if (this.isKeyword(word)) {
+            return this.lexKeyword(word);
+        }
         else
             return new Lexeme(VARIABLE, word);
     };

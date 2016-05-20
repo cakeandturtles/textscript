@@ -73,14 +73,23 @@ class Lexer{
         return true;
     }
 
-    private isKeyword(word : string) : boolean{
-        var keywords : [string] = [
-            "is", "if", "end", "else", "while", "do", "or", "and"
-        ];
-        for (var i : number = 0; i < keywords.length; i++){
-            if (keywords[i] === word) return true;
-        }
-        return false;
+    private isKeyword(word : string): boolean{
+        var lexeme = this.lexKeyword(word);
+        if (lexeme.type === UNKNOWN)
+            return false;
+        return true;
+    }
+
+    private lexKeyword(word: string): Lexeme{
+        if (word === "is") return new Lexeme(IS);
+        if (word === "if") return new Lexeme(IF);
+        if (word === "end") return new Lexeme(END);
+        if (word === "else") return new Lexeme(ELSE);
+        if (word === "while") return new Lexeme(WHILE);
+        if (word === "do") return new Lexeme(DO);
+        if (word === "or") return new Lexeme(OR);
+        if (word === "and") return new Lexeme(AND);
+        return new Lexeme(UNKNOWN);
     }
 
     private lexNumber() : Lexeme {
@@ -116,9 +125,9 @@ class Lexer{
     }
 
     private lexWord() : Lexeme {
-        var word : string = "";
-        var ch : string = this.input.read();
-        var first : boolean = true;
+        var word: string = "";
+        var ch: string = this.input.read();
+        var first: boolean = true;
         while (this.isWordLetter(ch, first) && !this.input.failed){
             word += ch;
             ch = this.input.read();
@@ -128,8 +137,9 @@ class Lexer{
 
         if (this.isBoolean(word))
             return new Lexeme(BOOLEAN, this.toBoolean(word));
-        if (this.isKeyword(word))
-            return new Lexeme(KEYWORD, word);
+        if (this.isKeyword(word)){
+            return this.lexKeyword(word);
+        }
         else return new Lexeme(VARIABLE, word);
     }
 

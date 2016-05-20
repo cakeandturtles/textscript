@@ -2,7 +2,8 @@
 following along with http://beastie.cs.ua.edu/cs403/schedule.html
 
 --------------------------------------------------------------------------------
-i'm not always terribly good at updating the formal grammar, but i probably will get around to it when the full language is mocked up
+i made a parser generator and now all the formal grammar is defined (in albeit slightly different syntax) in Grammar.ts and Grammar.js
+    -so therefore you GOTTA update that if you tryna update the parser :-)
 
 some things of note:
     0. most design decisions were chosen due to me messing around on the android keyboard and seeing what would feel nicest to write as a text language (nicest in terms of me thinking it was cute and in terms of minimizing keyboard mode switching for common cases)
@@ -18,5 +19,8 @@ some things of note:
 --------------------------------------------------------------------------------
 # to do
 
-    1. lexer currently doesn't lex 'compound keywords' like "greater than" or "divided by" as single keywords. decide whether to do that and if so, implement it
-    2. start working on parser?
+    -[ ] finish ParserGenerator
+       -[ ] add pending functions generation
+       -[ ] _empty_ ???
+    -[ ] finish Parser!!! (to just print out now??)
+    -[ ] environment?? parse trees??

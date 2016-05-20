@@ -12,10 +12,13 @@
 <script src="javascript/InputFile.js"></script>
 <script src="javascript/Lexer.js"></script>
 <script src="javascript/Scanner.js"></script>
+<script src="javascript/ParserGenerator.js"></script>
+<script src="javascript/Parser.js"></script>
 
 <script src="javascript/main.js"></script>
 </head>
 <body>
+    <textarea style="display: none;" id="language_grammar"></textarea>
     <textarea id="program_txt">x is 3
 y is x times 4
 print(x). print(y)
@@ -38,9 +41,12 @@ end
 # yeah i don't think so</textarea>
     <br/>
     <input id="program_run" type="button" value="run program" />
+    <div id="message_text"></div>
+    <br/>
+    it's a metaphot
 <script>
 
-window.onload = main();
+window.onload = main;
 
 </script>
 </body>

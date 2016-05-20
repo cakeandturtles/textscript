@@ -1,42 +1,97 @@
-var Parser = (function () {
-    function Parser() {
-        var grammar_text = "var operator = PLUS || TIMES || MINUS || DIVIDED_BY";
-        var grammar_text_rules = grammar_text.split(";");
-        for (var i = 0; i < grammar_text_rules.length; i++) {
-            var grammar_text_rule = grammar_text_rules[i].split("=");
-            var lsh = grammar_text_rule[0].trim();
-            lsh = lsh.split("var")[1].trim();
-            var rsh = grammar_text_rule[1].trim();
-        }
+var ParserGenerator = (function () {
+    function ParserGenerator() {
     }
-    Parser.prototype.check = function (type) {
+    ParserGenerator.GenerateGrammaticalFunctions = function (grammar_text) {
+        var grammatical_functions = {};
+        var grammar_text_rules = grammar_text.trim().split(";");
+        for (var i = 0; i < grammar_text_rules.length; i++) {
+            if (grammar_text_rules[i].length === 0)
+                continue;
+            var grammar_text_rule = grammar_text_rules[i].trim().split("=");
+            var lhs = grammar_text_rule[0].trim();
+            lhs = lhs.split("var")[1].trim();
+            var rhs = grammar_text_rule[1].trim();
+            var function_string = "function " + lhs + "(){";
+            function_string += this.GenerateOptionals(rhs);
+            function_string += "\n}";
+            var function_pending_string = "function " + lhs + "Pending(){";
+            function_pending_string += this.GeneratePendingOptionals(rhs);
+            function_pending_string += "\n}";
+            print(function_string);
+            print(function_pending_string);
+            grammatical_functions[lhs] = eval("(" + function_string + ")");
+            grammatical_functions[lhs + "Pending"] = eval("(" + function_pending_string + ")");
+        }
+        return grammatical_functions;
     };
-    Parser.prototype.advance = function () { };
-    Parser.prototype.match = function (type) {
+    ParserGenerator.GenerateOptionals = function (rsh) {
+        var function_body_string = "";
+        var optionals = rsh.split("||");
+        for (var i = 0; i < optionals.length; i++) {
+            var compounds = optionals[i].trim().split("&&");
+            function_body_string += "\n\t";
+            var first = compounds[0].trim();
+            if (first.charAt(0) === "(") {
+                first = first.substr(1);
+            }
+            if (first === "_empty_") { }
+            else if (first.toUpperCase() === first) {
+                if (i !== 0)
+                    function_body_string += "else ";
+                function_body_string += "if (this.check(" + first + ")){";
+                function_body_string += this.GenerateCompounds(compounds);
+                function_body_string += "\n\t}";
+            }
+            else if (first.toLowerCase() === first) {
+                if (i !== 0)
+                    function_body_string += "else ";
+                function_body_string += "if (this.grammatical_functions['" + first + "Pending']()){";
+                function_body_string += this.GenerateCompounds(compounds);
+                function_body_string += "\n\t}";
+            }
+        }
+        return function_body_string;
     };
-    Parser.prototype.matchNoAdvance = function () { };
-    Parser.prototype.statement = function () { };
-    Parser.prototype.operator = function () {
-        if (this.check(PLUS)) {
-            this.match(PLUS);
+    ParserGenerator.GeneratePendingOptionals = function (rsh) {
+        var pending_body_string = "\n\treturn ";
+        var optionals = rsh.split("||");
+        for (var i = 0; i < optionals.length; i++) {
+            if (i !== 0)
+                pending_body_string += " ||\n\t\t\t";
+            var compounds = optionals[i].trim().split("&&");
+            var first = compounds[0].trim();
+            if (first.charAt(0) === "(") {
+                first = first.substr(1);
+            }
+            if (first === "_empty_") {
+                pending_body_string += "true";
+            }
+            else if (first.toUpperCase() === first) {
+                pending_body_string += ("this.check(" + first + ")");
+            }
+            else {
+                pending_body_string += ("this.grammatical_functions['" + first + "Pending']()");
+            }
         }
-        else if (this.check(TIMES)) {
-            this.match(TIMES);
-        }
-        else if (this.check(MINUS)) {
-            this.match(MINUS);
-        }
-        else if (this.check(DIVIDED_BY)) {
-            this.match(DIVIDED_BY);
-        }
+        pending_body_string += ";";
+        return pending_body_string;
     };
-    Parser.prototype.parse = function (program_text) {
-        this.lexer = new Lexer(program_text);
-        this.current_lexeme = this.lexer.lex();
-        while (this.current_lexeme.type != END_OF_INPUT) {
-            this.statement();
-            this.current_lexeme = this.lexer.lex();
+    ParserGenerator.GenerateCompounds = function (compounds) {
+        var conditional_body_string = "";
+        for (var i = 0; i < compounds.length; i++) {
+            var compound = compounds[i].trim();
+            if (compound.charAt(0) === "(")
+                compound = compound.substr(1);
+            if (compound.charAt(compound.length - 1) === ")")
+                compound = compound.substring(0, compound.length - 1);
+            if (compound.toUpperCase() === compound) {
+                conditional_body_string += "\n\t\tthis.match(" + compound + ");";
+            }
+            else if (compound.toLowerCase() === compound) {
+                conditional_body_string += "\n\t\t" + compound + "();";
+            }
         }
+        return conditional_body_string;
     };
-    return Parser;
+    return ParserGenerator;
 }());
