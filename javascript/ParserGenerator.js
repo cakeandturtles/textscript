@@ -11,14 +11,12 @@ var ParserGenerator = (function () {
             var lhs = grammar_text_rule[0].trim();
             lhs = lhs.split("var")[1].trim();
             var rhs = grammar_text_rule[1].trim();
-            var function_string = "function " + lhs + "(){";
+            var function_string = "function " + lhs + "(self){";
             function_string += this.GenerateOptionals(rhs);
             function_string += "\n}";
-            var function_pending_string = "function " + lhs + "Pending(){";
+            var function_pending_string = "function " + lhs + "Pending(self){";
             function_pending_string += this.GeneratePendingOptionals(rhs);
             function_pending_string += "\n}";
-            print(function_string);
-            print(function_pending_string);
             grammatical_functions[lhs] = eval("(" + function_string + ")");
             grammatical_functions[lhs + "Pending"] = eval("(" + function_pending_string + ")");
         }
@@ -38,14 +36,14 @@ var ParserGenerator = (function () {
             else if (first.toUpperCase() === first) {
                 if (i !== 0)
                     function_body_string += "else ";
-                function_body_string += "if (this.check(" + first + ")){";
+                function_body_string += "if (self.check(" + first + ")){";
                 function_body_string += this.GenerateCompounds(compounds);
                 function_body_string += "\n\t}";
             }
             else if (first.toLowerCase() === first) {
                 if (i !== 0)
                     function_body_string += "else ";
-                function_body_string += "if (this.grammatical_functions['" + first + "Pending']()){";
+                function_body_string += "if (self.grammatical_functions." + first + "Pending(self)){";
                 function_body_string += this.GenerateCompounds(compounds);
                 function_body_string += "\n\t}";
             }
@@ -67,10 +65,10 @@ var ParserGenerator = (function () {
                 pending_body_string += "true";
             }
             else if (first.toUpperCase() === first) {
-                pending_body_string += ("this.check(" + first + ")");
+                pending_body_string += ("self.check(" + first + ")");
             }
             else {
-                pending_body_string += ("this.grammatical_functions['" + first + "Pending']()");
+                pending_body_string += ("self.grammatical_functions." + first + "Pending(self)");
             }
         }
         pending_body_string += ";";
@@ -85,10 +83,10 @@ var ParserGenerator = (function () {
             if (compound.charAt(compound.length - 1) === ")")
                 compound = compound.substring(0, compound.length - 1);
             if (compound.toUpperCase() === compound) {
-                conditional_body_string += "\n\t\tthis.match(" + compound + ");";
+                conditional_body_string += "\n\t\tself.match(" + compound + ");";
             }
             else if (compound.toLowerCase() === compound) {
-                conditional_body_string += "\n\t\t" + compound + "();";
+                conditional_body_string += "\n\t\tself.grammatical_functions." + compound + "(self);";
             }
         }
         return conditional_body_string;

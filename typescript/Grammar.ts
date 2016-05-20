@@ -1,15 +1,19 @@
 var operator = PLUS || TIMES || MINUS || DIVIDED_BY;
 
-var primary = NUMBER || (VARIABLE && opt_func_call) || (OPAREN && expression && CPAREN);
+var primary = NUMBER || (OPAREN && expression && CPAREN) || (VARIABLE && assignment_rhs_or_opt_func_call_rhs);
 
 //TODO:: parenthetical nesting?
 var expression = (primary && opt_expression_operation_rhs);
 
 var opt_expression_operation_rhs = (operator && expression) || _empty_;
 
-var opt_func_call = (OPAREN && opt_expression_list && CPAREN) || _empty_;
+var assignment_rhs = (IS && expression);
 
-var opt_expression_list = list || _empty_;
+var assignment_rhs_or_opt_func_call_rhs = assignment_rhs || opt_func_call_rhs;
+
+var opt_func_call_rhs = (OPAREN && opt_list && CPAREN) || _empty_;
+
+var opt_list = list || _empty_;
 
 var list = primary || (primary && COMMA && list);
 
@@ -28,8 +32,6 @@ var block = (DO && statement_list && END);
 
 var statement_list = statement || statement_list || _empty_;
 
-var statement = (expression && statement_end) || if_statement || (assignment && statement_end) || while_statement;
+var statement = (expression && statement_end) || if_statement || while_statement;
 
 var statement_end = NEWLINE || PERIOD;
-
-var assignment = (VARIABLE && IS && expression);

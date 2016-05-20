@@ -43,16 +43,15 @@ class ParserGenerator{
 
             var rhs : string = grammar_text_rule[1].trim();
 
-            var function_string: string = "function " + lhs + "(){";
+            var function_string: string = "function " + lhs + "(self){";
             function_string += this.GenerateOptionals(rhs);
+            //function_string += "\n\tprint(\""+lhs+"\");";
             function_string += "\n}";
 
-            var function_pending_string: string = "function " + lhs + "Pending(){";
+            var function_pending_string: string = "function " + lhs + "Pending(self){";
             function_pending_string += this.GeneratePendingOptionals(rhs);
             function_pending_string += "\n}";
 
-            print(function_string);
-            print(function_pending_string);
             grammatical_functions[lhs] = eval("(" + function_string + ")");
             grammatical_functions[lhs+"Pending"] = eval("(" + function_pending_string + ")");
         }
@@ -79,14 +78,14 @@ class ParserGenerator{
             //if uppercase, it's terminal
             else if (first.toUpperCase() === first){
                 if (i !== 0) function_body_string += "else ";
-                function_body_string += "if (this.check(" + first + ")){";
+                function_body_string += "if (self.check(" + first + ")){";
                 function_body_string += this.GenerateCompounds(compounds);
                 function_body_string += "\n\t}";
             }
             //if lowercase, it's not terminal
             else if (first.toLowerCase() === first){
                 if (i !== 0) function_body_string += "else ";
-                function_body_string += "if (this.grammatical_functions['" + first + "Pending']()){";
+                function_body_string += "if (self.grammatical_functions." + first + "Pending(self)){";
                 function_body_string += this.GenerateCompounds(compounds);
                 function_body_string += "\n\t}";
             }
@@ -114,11 +113,11 @@ class ParserGenerator{
             }
             //if uppercase, it's terminal
             else if (first.toUpperCase() === first){
-                pending_body_string += ("this.check(" + first + ")");
+                pending_body_string += ("self.check(" + first + ")");
             }
             //if lowercase, it's NOT terminal (need to call its pending)
             else{
-                pending_body_string += ("this.grammatical_functions['" + first + "Pending']()");
+                pending_body_string += ("self.grammatical_functions." + first + "Pending(self)");
             }
         }
         pending_body_string += ";";
@@ -140,11 +139,11 @@ class ParserGenerator{
 
             //if uppercase, it's terminal
             if (compound.toUpperCase() === compound){
-                conditional_body_string += "\n\t\tthis.match(" + compound +");";
+                conditional_body_string += "\n\t\tself.match(" + compound +");";
             }
             //if lowercase, it's not terminal
             else if (compound.toLowerCase() === compound){
-                conditional_body_string += "\n\t\t" + compound + "();";
+                conditional_body_string += "\n\t\tself.grammatical_functions." + compound + "(self);";
             }
         }
         return conditional_body_string;

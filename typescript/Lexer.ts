@@ -89,15 +89,21 @@ class Lexer{
         if (word === "do") return new Lexeme(DO);
         if (word === "or") return new Lexeme(OR);
         if (word === "and") return new Lexeme(AND);
+        if (word === "times") return new Lexeme(TIMES);
+        if (word === "plus") return new Lexeme(PLUS);
+        if (word === "minus") return new Lexeme(MINUS);
+        if (word === "divided") return new Lexeme(DIVIDED_BY);
+        if (word === "equals" || word === "equal") return new Lexeme(EQUAL_TO);
+        if (word === "not") return new Lexeme(NOT);
         return new Lexeme(UNKNOWN);
     }
 
     private lexNumber() : Lexeme {
-        var num_string : string = "";
-        var ch : string = this.input.read();
-        var first : boolean = true;
-        var decimal : boolean = (ch == ".");
-        var has_had_decimal : boolean = decimal;
+        var num_string: string = "";
+        var ch: string = this.input.read();
+        var first: boolean = true;
+        var decimal: boolean = (ch == ".");
+        var has_had_decimal: boolean = decimal;
         while ((this.isDigit(ch) || (ch == '-' && first) || (ch == '.')) && !this.input.failed){
             num_string += ch;
             ch = this.input.read();
@@ -124,7 +130,7 @@ class Lexer{
         return new Lexeme(NUMBER, Number(num_string));
     }
 
-    private lexWord() : Lexeme {
+    private lexWord(): Lexeme {
         var word: string = "";
         var ch: string = this.input.read();
         var first: boolean = true;
@@ -144,11 +150,11 @@ class Lexer{
     }
 
     private lexString() : Lexeme {
-        var string = "";
+        var string: string = "";
         //whether a single or double quote
-        var quote : string = this.input.read();
-        var escaped : boolean = false;
-        var ch : string = this.input.read();
+        var quote: string = this.input.read();
+        var escaped: boolean = false;
+        var ch: string = this.input.read();
 
         //TODO:: i think this allows strings with newlines??
         while ((ch !== quote || escaped) && !this.input.failed){

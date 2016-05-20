@@ -6,21 +6,18 @@ var Parser = (function () {
         alert(error);
     };
     Parser.prototype.check = function (type) {
-        print('check');
         return this.current_lexeme.type === type;
     };
     Parser.prototype.advance = function () {
-        print('advance');
         this.current_lexeme = this.lexer.lex();
     };
     Parser.prototype.match = function (type) {
-        print('match');
         this.matchNoAdvance(type);
         this.advance();
     };
     Parser.prototype.matchNoAdvance = function (type) {
         if (!this.check(type)) {
-            this.fatal("syntax error");
+            this.fatal("syntax error: " + type);
         }
         else {
             print(type);
@@ -32,14 +29,14 @@ var Parser = (function () {
         var i = 0;
         print(this.statement);
         while (this.current_lexeme.type != END_OF_INPUT) {
-            print("number of statements: " + i);
             this.statement();
             this.current_lexeme = this.lexer.lex();
             i++;
+            print("number of statements: " + i);
         }
     };
     Parser.prototype.statement = function () {
-        this.grammatical_functions["statement"]();
+        this.grammatical_functions["statement"](this);
     };
     return Parser;
 }());

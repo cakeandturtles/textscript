@@ -12,21 +12,18 @@ class Parser{
     }
 
     private check(type: string): boolean {
-        print('check');
         return this.current_lexeme.type === type;
     }
     private advance(): void {
-        print('advance');
         this.current_lexeme = this.lexer.lex();
     }
     private match(type: string): void {
-        print('match');
         this.matchNoAdvance(type);
         this.advance();
     }
     private matchNoAdvance(type: string ): void {
         if (!this.check(type)){
-            this.fatal("syntax error");
+            this.fatal("syntax error: " + type);
         }else{
             print(type);
         }
@@ -38,14 +35,14 @@ class Parser{
         var i: number = 0;
         print(this.statement);
         while (this.current_lexeme.type != END_OF_INPUT){
-            print("number of statements: " + i);
             this.statement();
             this.current_lexeme = this.lexer.lex();
             i++;
+            print("number of statements: " + i);
         }
     }
 
     private statement(): void{
-        this.grammatical_functions["statement"]();
+        this.grammatical_functions["statement"](this);
     }
 }

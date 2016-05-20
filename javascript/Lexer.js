@@ -89,6 +89,18 @@ var Lexer = (function () {
             return new Lexeme(OR);
         if (word === "and")
             return new Lexeme(AND);
+        if (word === "times")
+            return new Lexeme(TIMES);
+        if (word === "plus")
+            return new Lexeme(PLUS);
+        if (word === "minus")
+            return new Lexeme(MINUS);
+        if (word === "divided")
+            return new Lexeme(DIVIDED_BY);
+        if (word === "equals" || word === "equal")
+            return new Lexeme(EQUAL_TO);
+        if (word === "not")
+            return new Lexeme(NOT);
         return new Lexeme(UNKNOWN);
     };
     Lexer.prototype.lexNumber = function () {
