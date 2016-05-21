@@ -16,7 +16,6 @@ class Parser{
     }
     private advance(): void {
         this.current_lexeme = this.lexer.lex();
-        print("\tadvanced: " + this.current_lexeme.type);
     }
     private match(type: string): void {
         this.matchNoAdvance(type);

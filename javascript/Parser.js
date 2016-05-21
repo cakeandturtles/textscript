@@ -10,7 +10,6 @@ var Parser = (function () {
     };
     Parser.prototype.advance = function () {
         this.current_lexeme = this.lexer.lex();
-        print("\tadvanced: " + this.current_lexeme.type);
     };
     Parser.prototype.match = function (type) {
         this.matchNoAdvance(type);
