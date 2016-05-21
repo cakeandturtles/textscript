@@ -22,6 +22,22 @@ function runProgram() {
     var program_txt = program_txt_element.value;
     var grammar_text = main.prototype.grammar_text;
     parser = new Parser(grammar_text);
+    parser.grammatical_functions.statement = (function statement(self) {
+        if (self.grammatical_functions.expressionPending(self)) {
+            print("EXPRESSION STATEMENT");
+            self.grammatical_functions.expression(self);
+            self.grammatical_functions.statement_end(self);
+        }
+        else if (self.grammatical_functions.if_statementPending(self)) {
+            print("IF STATEMENT");
+            self.grammatical_functions.if_statement(self);
+        }
+        else if (self.grammatical_functions.while_statementPending(self)) {
+            print("WHILE STATEMENT");
+            self.grammatical_functions.while_statement(self);
+        }
+        print("statement");
+    });
     parser.parse(program_txt);
 }
 function print(value) {

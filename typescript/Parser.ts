@@ -16,6 +16,7 @@ class Parser{
     }
     private advance(): void {
         this.current_lexeme = this.lexer.lex();
+        print("\tadvanced: " + this.current_lexeme.type);
     }
     private match(type: string): void {
         this.matchNoAdvance(type);
@@ -33,10 +34,8 @@ class Parser{
         this.lexer = new Lexer(program_text);
         this.current_lexeme = this.lexer.lex();
         var i: number = 0;
-        print(this.statement);
         while (this.current_lexeme.type != END_OF_INPUT){
             this.statement();
-            this.current_lexeme = this.lexer.lex();
             i++;
             print("number of statements: " + i);
         }

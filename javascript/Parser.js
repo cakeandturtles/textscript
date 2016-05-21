@@ -10,6 +10,7 @@ var Parser = (function () {
     };
     Parser.prototype.advance = function () {
         this.current_lexeme = this.lexer.lex();
+        print("\tadvanced: " + this.current_lexeme.type);
     };
     Parser.prototype.match = function (type) {
         this.matchNoAdvance(type);
@@ -27,10 +28,8 @@ var Parser = (function () {
         this.lexer = new Lexer(program_text);
         this.current_lexeme = this.lexer.lex();
         var i = 0;
-        print(this.statement);
         while (this.current_lexeme.type != END_OF_INPUT) {
             this.statement();
-            this.current_lexeme = this.lexer.lex();
             i++;
             print("number of statements: " + i);
         }

@@ -13,6 +13,7 @@ var ParserGenerator = (function () {
             var rhs = grammar_text_rule[1].trim();
             var function_string = "function " + lhs + "(self){";
             function_string += this.GenerateOptionals(rhs);
+            function_string += "\n\tprint(\"" + lhs + "\");";
             function_string += "\n}";
             var function_pending_string = "function " + lhs + "Pending(self){";
             function_pending_string += this.GeneratePendingOptionals(rhs);
