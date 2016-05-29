@@ -45,7 +45,6 @@ class ParserGenerator{
 
             var function_string: string = "function " + lhs + "(self){";
             function_string += this.GenerateOptionals(rhs);
-            //function_string += "\n\tprint(\""+lhs+"\");";
             function_string += "\n}";
 
             var function_pending_string: string = "function " + lhs + "Pending(self){";
@@ -90,6 +89,7 @@ class ParserGenerator{
                 function_body_string += "\n\t}";
             }
         }
+
         return function_body_string;
     }
 

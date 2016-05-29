@@ -1,35 +1,56 @@
 class Lexeme {
     constructor(public type : string, public value? : any){
     }
+
+    public toString(): string{
+        return "type: " + this.type + ", value: " + this.value;
+    }
 }
 
 class Lexer{
     private input : InputFile;
+    private num_chars_in_lexeme: number = 0;
     constructor(program_txt : string){
         this.input = new InputFile(program_txt);
+    }
+
+    public getCharIndex() : number {
+        return this.input.getCharIndex();
+    }
+
+    public getLineNum(): number {
+        return this.input.getLineNum();
+    }
+
+    public getLine(): string {
+        return this.input.getLine();
+    }
+
+    public getIndexOnLine(): number {
+        return this.input.getIndexOnLine();
     }
 
     private skipWhitespace() : void
     {
         var ch : string;
-        ch = this.input.read();
+        ch = this.next_char();
         //skip whitespace, but not newline!!!
         //(because newline is important to code)
         while (this.isWhitespace(ch) && ch != "\n" && !this.input.failed){
-            ch = this.input.read();
+            ch = this.next_char();
         }
-        this.input.backup();
+        this.backup_input();
     }
 
     private skipComment() : void{
         var ch : string;
-        ch = this.input.read();
+        ch = this.next_char();
         if (ch === "#"){
             while (ch != "\n" && !this.input.failed){
-                ch = this.input.read();
+                ch = this.next_char();
             }
         }
-        this.input.backup();
+        this.backup_input();
     }
 
     private isWhitespace(ch : string) : boolean{
@@ -37,7 +58,7 @@ class Lexer{
     }
 
     private isDigit(ch : string) : boolean{
-        return !isNaN(Number(ch)) && !this.isWhitespace(ch);
+        return ("0123456789".indexOf(ch) >= 0);
     }
 
     private isLetter(ch : string) : boolean{
@@ -100,20 +121,20 @@ class Lexer{
 
     private lexNumber() : Lexeme {
         var num_string: string = "";
-        var ch: string = this.input.read();
+        var ch: string = this.next_char();
         var first: boolean = true;
         var decimal: boolean = (ch == ".");
         var has_had_decimal: boolean = decimal;
         while ((this.isDigit(ch) || (ch == '-' && first) || (ch == '.')) && !this.input.failed){
             num_string += ch;
-            ch = this.input.read();
+            ch = this.next_char();
             first = false;
 
             //if there is a period at the end of a number (e.g. "123.") with no
             //following digits, count the "." as a statement separator
             //(by backing up now, and letting the lexer read it on its own)
             if (!this.isDigit(ch) && decimal){
-                this.input.backup();
+                this.backup_input(true);
                 break;
             }
             decimal = (ch == ".");
@@ -121,25 +142,25 @@ class Lexer{
             //if there is more than one period on a number (e.g. "123.456.789")
             //than this is an invalid number!
             if (decimal && has_had_decimal){
-                this.input.backup();
+                this.backup_input();
                 //TODO:: syntax error?? or what?
                 return new Lexeme(UNKNOWN);
             }
         }
-        this.input.backup();
+        this.backup_input();
         return new Lexeme(NUMBER, Number(num_string));
     }
 
     private lexWord(): Lexeme {
         var word: string = "";
-        var ch: string = this.input.read();
+        var ch: string = this.next_char();
         var first: boolean = true;
         while (this.isWordLetter(ch, first) && !this.input.failed){
             word += ch;
-            ch = this.input.read();
+            ch = this.next_char();
             first = false;
         }
-        this.input.backup();
+        this.backup_input();
 
         if (this.isBoolean(word))
             return new Lexeme(BOOLEAN, this.toBoolean(word));
@@ -152,15 +173,15 @@ class Lexer{
     private lexString() : Lexeme {
         var string: string = "";
         //whether a single or double quote
-        var quote: string = this.input.read();
+        var quote: string = this.next_char();
         var escaped: boolean = false;
-        var ch: string = this.input.read();
+        var ch: string = this.next_char();
 
         //TODO:: i think this allows strings with newlines??
         while ((ch !== quote || escaped) && !this.input.failed){
             if (ch !== quote || escaped)
                 string += ch;
-            ch = this.input.read();
+            ch = this.next_char();
 
             //keep track of whether the escape character was used prior to the next character
             if (ch === "\\" && !escaped)
@@ -168,17 +189,39 @@ class Lexer{
             else escaped = false;
         }
 
-        this.input.backup();
+        this.backup_input();
         return new Lexeme(STRING, string);
     }
 
-    public lex() : Lexeme
+    //backs up the input by the number of characters in the last lexeme
+    //note, cannot back up more than once without relexing
+    public backup(): void{
+        print("NUM: " + this.num_chars_in_lexeme);
+        for (let i = 0; i < this.num_chars_in_lexeme; i++){
+            this.backup_input();
+        }
+    }
+
+    private next_char(): string{
+        var ch: string = this.input.read();
+        this.num_chars_in_lexeme++;
+        return ch;
+    }
+
+    private backup_input(reset_failed = false): void{
+        this.num_chars_in_lexeme--;
+        this.input.backup(reset_failed);
+    }
+
+    public lex(): Lexeme
     {
         var ch : string;
         this.skipWhitespace();
         this.skipComment();
 
-        ch = this.input.read();
+        this.num_chars_in_lexeme = 0;
+
+        ch = this.next_char();
         if (this.input.failed){
             return new Lexeme(END_OF_INPUT);
         }
@@ -201,59 +244,59 @@ class Lexer{
                 return new Lexeme(COMMA);
             case '+':
                 //check for += and ++
-                ch = this.input.read();
+                ch = this.next_char();
                 if (ch == "=") return new Lexeme(PLUS_EQUALS);
                 if (ch == "+") return new Lexeme(PLUS_PLUS);
-                this.input.backup();
+                this.backup_input();
                 return new Lexeme(PLUS);
             case '-':
                 //check for negative number?
-                ch = this.input.read();
-                this.input.backup();
+                ch = this.next_char();
+                this.backup_input();
                 //break so it will be caught by the number checker below
                 if (this.isDigit(ch)) break;
 
                 //check for -= and --
-                ch = this.input.read();
+                ch = this.next_char();
                 if (ch == "=") return new Lexeme(MINUS_EQUALS);
                 if (ch == "-") return new Lexeme(MINUS_MINUS);
-                this.input.backup();
+                this.backup_input();
                 return new Lexeme(MINUS);
             case '*':
                 //check for *=
-                ch = this.input.read();
+                ch = this.next_char();
                 if (ch == "=") return new Lexeme(TIMES_EQUALS);
-                this.input.backup();
+                this.backup_input();
                 return new Lexeme(TIMES);
             case '/':
                 //check for /=
-                ch = this.input.read();
+                ch = this.next_char();
                 if (ch == "=") return new Lexeme(DIVIDED_BY_EQUALS);
-                this.input.backup();
+                this.backup_input();
                 return new Lexeme(DIVIDED_BY);
             case '<':
                 //check for <=
-                ch = this.input.read();
+                ch = this.next_char();
                 if (ch == "=") return new Lexeme(LESS_THAN_EQUAL);
-                this.input.backup();
+                this.backup_input();
                 return new Lexeme(LESS_THAN);
             case '>':
                 //check for >=
-                ch = this.input.read();
+                ch = this.next_char();
                 if (ch == "=") return new Lexeme(GREATER_THAN_EQUAL);
-                this.input.backup();
+                this.backup_input();
                 return new Lexeme(GREATER_THAN);
             case '=':
                 //check for ==
-                ch = this.input.read();
+                ch = this.next_char();
                 if (ch == "=") return new Lexeme(EQUAL_TO);
-                this.input.backup();
+                this.backup_input();
                 return new Lexeme(ASSIGN);
             case '.':
                 //TODO:: ... ?
                 //check for .012 non digit prepended decimals
-                ch = this.input.read();
-                this.input.backup();
+                ch = this.next_char();
+                this.backup_input();
                 //break so it will be caught by the number checker below
                 if (this.isDigit(ch)) break;
                 return new Lexeme(PERIOD);
@@ -266,7 +309,7 @@ class Lexer{
         //also allow negative numbers ('-' as first character)
         //also allow a decimal in a number ('.')
         if (this.isDigit(ch) || ch == "-" || ch == "."){
-            this.input.backup();
+            this.backup_input();
             return this.lexNumber();
         }
         //if starting with a word letter
@@ -274,11 +317,11 @@ class Lexer{
         //this can be keywords
         //this can be boolean values??
         else if (this.isWordLetter(ch, true)){
-            this.input.backup();
+            this.backup_input();
             return this.lexWord();
         }
         else if (ch == '"' || ch == "'"){
-            this.input.backup();
+            this.backup_input();
             return this.lexString();
         }
 

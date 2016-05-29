@@ -7,8 +7,6 @@ var expression = (primary && opt_expression_operation_rhs);
 
 var opt_expression_operation_rhs = (operator && expression) || _empty_;
 
-var opt_expression = expression || _empty_;
-
 var assignment_rhs = (IS && expression);
 
 var assignment_rhs_or_opt_func_call_rhs = assignment_rhs || opt_func_call_rhs;
@@ -34,6 +32,6 @@ var block = (DO && statement_list && END);
 
 var statement_list = statement || statement_list || _empty_;
 
-var statement = (opt_expression && statement_end) || if_statement || while_statement;
+var statement =  if_statement || while_statement || (expression && statement_end) || statement_end;
 
-var statement_end = NEWLINE || PERIOD;
+var statement_end = NEWLINE || PERIOD || END_OF_INPUT;
