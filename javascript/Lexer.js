@@ -2,6 +2,8 @@ var Lexeme = (function () {
     function Lexeme(type, value) {
         this.type = type;
         this.value = value;
+        this.left = undefined;
+        this.right = undefined;
     }
     Lexeme.prototype.toString = function () {
         return "type: " + this.type + ", value: " + this.value;
@@ -125,7 +127,7 @@ var Lexer = (function () {
         var first = true;
         var decimal = (ch == ".");
         var has_had_decimal = decimal;
-        while ((this.isDigit(ch) || (ch == '-' && first) || (ch == '.')) && !this.input.failed) {
+        while ((this.isDigit(ch) || (ch == '.')) && !this.input.failed) {
             num_string += ch;
             ch = this.next_char();
             first = false;
@@ -227,10 +229,6 @@ var Lexer = (function () {
                 return new Lexeme(PLUS);
             case '-':
                 ch = this.next_char();
-                this.backup_input();
-                if (this.isDigit(ch))
-                    break;
-                ch = this.next_char();
                 if (ch == "=")
                     return new Lexeme(MINUS_EQUALS);
                 if (ch == "-")
@@ -276,7 +274,7 @@ var Lexer = (function () {
             case '\n':
                 return new Lexeme(NEWLINE);
         }
-        if (this.isDigit(ch) || ch == "-" || ch == ".") {
+        if (this.isDigit(ch) || ch == ".") {
             this.backup_input();
             return this.lexNumber();
         }

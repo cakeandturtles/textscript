@@ -1,5 +1,7 @@
 class Lexeme {
-    constructor(public type : string, public value? : any){
+    public left: Lexeme = undefined;
+    public right: Lexeme = undefined;
+    constructor(public type : string, public value?: any){
     }
 
     public toString(): string{
@@ -125,7 +127,7 @@ class Lexer{
         var first: boolean = true;
         var decimal: boolean = (ch == ".");
         var has_had_decimal: boolean = decimal;
-        while ((this.isDigit(ch) || (ch == '-' && first) || (ch == '.')) && !this.input.failed){
+        while ((this.isDigit(ch) || (ch == '.')) && !this.input.failed){
             num_string += ch;
             ch = this.next_char();
             first = false;
@@ -250,12 +252,6 @@ class Lexer{
                 this.backup_input();
                 return new Lexeme(PLUS);
             case '-':
-                //check for negative number?
-                ch = this.next_char();
-                this.backup_input();
-                //break so it will be caught by the number checker below
-                if (this.isDigit(ch)) break;
-
                 //check for -= and --
                 ch = this.next_char();
                 if (ch == "=") return new Lexeme(MINUS_EQUALS);
@@ -306,9 +302,8 @@ class Lexer{
         //multi-character tokens
 
         //if starting with a digit!! (means this is a number value)
-        //also allow negative numbers ('-' as first character)
-        //also allow a decimal in a number ('.')
-        if (this.isDigit(ch) || ch == "-" || ch == "."){
+        //also allow a decimal in a number ('.' as first character)
+        if (this.isDigit(ch) || ch == "."){
             this.backup_input();
             return this.lexNumber();
         }

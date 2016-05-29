@@ -1,5 +1,5 @@
 var operator = PLUS || TIMES || MINUS || DIVIDED_BY;
-var primary = NUMBER || (OPAREN && expression && CPAREN) || (VARIABLE && assignment_rhs_or_opt_func_call_rhs);
+var primary = NUMBER || (MINUS && NUMBER) || (OPAREN && expression && CPAREN) || (VARIABLE && assignment_rhs_or_opt_func_call_rhs);
 var expression = (primary && opt_expression_operation_rhs);
 var opt_expression_operation_rhs = (operator && expression) || _empty_;
 var assignment_rhs = (IS && expression);
