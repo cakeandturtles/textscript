@@ -19,5 +19,5 @@ some things of note:
 --------------------------------------------------------------------------------
 # to do
     -[ ] add grammar rules for classes/objects!!!
-    -[ ] GRAMMAR rules for closures??? default parameter values??
+    -[ ] GRAMMAR rules for default parameter values??
     -[ ] parse trees??

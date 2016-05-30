@@ -41,13 +41,80 @@ def foobar with x, y do
     #return call bar with x + y
 end
 
-# anonymous function definitions
+# anonymous function definitions/function assignment
+##NOTE: this is equivalent to "def f with x do ... end"
 f is def with x do
     return x times 2
 end
+
+#function assignment (with non anonymous function)
+f is def fb do end
+##NOTE: this assigns the variable "fb" to the value of the anonymous function
+##      as well as assigning the variable f to the value of this function
 
 # function calls
 fval is call f with 3
 print fval
 
 print call foobar with 4, 5
+
+# function closure?
+f is foobar with 4
+fval is f with 5
+print fval
+
+#class definitions
+class dog
+    def dog with name do
+        my name is name
+    end
+
+    #static methods
+    static def summmon do
+        print "a dog is summoned"
+    end
+
+    def bark do
+        print my name + ", woof!"
+    end
+end
+
+#object instantiation
+adog is new dog with "toby"
+
+#object method calling
+call adog bark
+#static class method calling
+call dog summon
+#it probably looks all better if you make class names start with capital letter...
+
+#object attribute getting/setting
+print adog name
+adog name is "alex"
+call adog bark
+
+#class inheritance
+class doggo extends dog
+    def doggo with name, type do
+        call super with name
+        my type is type
+    end
+
+    #overwriting methods
+    def bark with num do
+        print my name
+        i is 0
+        while i < num do
+            print "woof!"
+            i++
+        end
+    end
+end
+
+toby is new doggo with "toby", "dragon"
+call toby bark
+
+#setting class methods/attributes
+dog bark is def do
+    print "woofers!"
+end
