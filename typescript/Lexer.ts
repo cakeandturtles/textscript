@@ -310,7 +310,7 @@ class Lexer{
                 ch = this.next_char();
                 if (ch == "=") return new Lexeme(EQUAL_TO);
                 this.backup_input();
-                return new Lexeme(ASSIGN);
+                return new Lexeme(IS);
             case '.':
                 //TODO:: ... ?
                 //check for .012 non digit prepended decimals

@@ -297,7 +297,7 @@ var Lexer = (function () {
                 if (ch == "=")
                     return new Lexeme(EQUAL_TO);
                 this.backup_input();
-                return new Lexeme(ASSIGN);
+                return new Lexeme(IS);
             case '.':
                 ch = this.next_char();
                 this.backup_input();

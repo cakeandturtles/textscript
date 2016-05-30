@@ -14,10 +14,12 @@ some things of note:
 
         of note is that in cases where digits are followed by a period, but no digits immediately follow the period, (e.g. "123."), the period will act as a statement separator, and NOT as a decimal of the number.
 
-    3. conditional and loop blocks start with 'do' and end with 'end' in addition to being able to start and end with '{' and '}', respectively. like the brace equivalent, these need no statement separators, but unlike the brace equivalent, they need some whitespace before and after them (or else they will be viewed as a variable)
+    3. conditional and loop blocks start with 'do' and end with 'end' in addition to being able to start and end with '{' and '}', respectively. like the brace equivalent, these need no statement separators, but unlike the brace equivalent, they need some whitespace before and after them (or else they will be viewed as part of a variable)
 
 --------------------------------------------------------------------------------
 # to do
     -[ ] add grammar rules for classes/objects!!!
     -[ ] GRAMMAR rules for default parameter values??
-    -[ ] parse trees??
+    -[ ] can classes be anonymous?
+    -[ ] import and from import???
+    -[ ] implement parse functions and parse trees??

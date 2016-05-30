@@ -14,7 +14,6 @@ const GREATER_THAN_EQUAL: string = "GREATER_THAN_EQUAL";
 const EQUAL_TO: string = "EQUAL_TO";
 const NOT: string = "NOT";
 const NOT_EQUAL_TO: string = "NOT_EQUAL_TO";
-const ASSIGN: string = "ASSIGN";
 const PERIOD: string = "PERIOD";
 const NEWLINE: string = "NEWLINE";
 
