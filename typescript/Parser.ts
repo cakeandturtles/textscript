@@ -1,36 +1,34 @@
 class Parser{
-    private current_lexeme: Lexeme;
-    private lexer: Lexer;
-    private grammatical_functions: { [id: string] : Function};
+    protected current_lexeme: Lexeme;
+    protected lexer: Lexer;
+    protected grammatical_functions: { [id: string] : Function};
 
-    private is_valid_syntax: boolean = true;
+    protected is_valid_syntax: boolean = true;
 
-    constructor(grammar_text: string){
-        this.grammatical_functions = ParserGenerator.GenerateGrammaticalFunctions(grammar_text);
+    constructor(){
     }
 
-    private fatal(error: string): void{
+    protected fatal(error: string): void{
         print(error);
         this.current_lexeme = new Lexeme(END_OF_INPUT);
         this.is_valid_syntax = false;
     }
 
-    private check(type: string): boolean {
+    protected check(type: string): boolean {
         return this.current_lexeme.type === type;
     }
-    private advance(): void {
+    private advance(): Lexeme {
+        var old_lexeme = this.current_lexeme;
         this.current_lexeme = this.lexer.lex();
+        return old_lexeme;
     }
-    private match(type: string): void {
-        this.matchNoAdvance(type);
-        this.advance();
-    }
-    private matchNoAdvance(type: string ): void {
-        if (!this.check(type)){
-            this.fatal("syntax error: " + type);
-        }else{
-            print(type);
+    protected match(type: string): Lexeme {
+        if (this.check(type)){
+            return this.advance();
         }
+        this.fatal("parse error: looking for " + type + ", found " +
+                   this.current_lexeme.type + " instead\n");
+        return undefined;
     }
 
     public parse(program_text: string): void {
@@ -74,7 +72,9 @@ class Parser{
         this.fatal(msg);
     }
 
+    /**************************************************************************/
+
     private statement(): void{
-        this.grammatical_functions["statement"](this);
+
     }
 }

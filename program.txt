@@ -1,15 +1,53 @@
 x is 3
 y is x times 4
-print(x). print(y)
+#print is a special keyword io function
+print x. print y
 
+#verbal operators and their symbolic equivalents
+#d is -3 - -4
+d is minus 3 minus minus 4
+#z is y * x + 12
 z is y times x plus 12
+#w is y/x
 w is y divided by x
+#a is w % 6
+a is w mod 16
+#b is a**2
+b is a to the 2
+#c is log(100)
+c is log 100
 
 if z is? 3 do
-    print(x)
-    print(y)
+    print x
+    print y
 end. else
-    while z greater than 3 do print(z). z is z minus 1. end
+    while z greater than 3 do print z. z is z minus 1. end
 end
 
-# yeah i don't think so
+# named function definitions
+def foo do
+    return 3
+end
+
+def bar with x do
+    f is call foo
+    return f + x
+    #return call foo + x
+end
+
+def foobar with x, y do
+    b is call bar with x
+    return b + y
+    #return call bar with x + y
+end
+
+# anonymous function definitions
+f is def with x do
+    return x times 2
+end
+
+# function calls
+fval is call f with 3
+print fval
+
+print call foobar with 4, 5

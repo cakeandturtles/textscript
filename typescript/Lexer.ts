@@ -36,9 +36,9 @@ class Lexer{
     {
         var ch : string;
         ch = this.next_char();
-        //skip whitespace, but not newline!!!
-        //(because newline is important to code)
-        while (this.isWhitespace(ch) && ch != "\n" && !this.input.failed){
+        //skip whitespace
+        //(except newline as it is a syntactic piece of textscript)
+        while (this.isWhitespace(ch) && !(ch === "\n") && !this.input.failed){
             ch = this.next_char();
         }
         this.backup_input();
@@ -104,6 +104,16 @@ class Lexer{
     }
 
     private lexKeyword(word: string): Lexeme{
+        if (word === "times") return new Lexeme(TIMES);
+        if (word === "plus") return new Lexeme(PLUS);
+        if (word === "minus") return new Lexeme(MINUS);
+        if (word === "divided") return new Lexeme(DIVIDED);
+        if (word === "by") return new Lexeme(BY);
+        if (word === "to") return new Lexeme(TO);
+        if (word === "the") return new Lexeme(THE);
+        if (word === "mod") return new Lexeme(MOD);
+        if (word === "log") return new Lexeme(LOG);
+        if (word === "equals" || word === "equal") return new Lexeme(EQUAL_TO);
         if (word === "is") return new Lexeme(IS);
         if (word === "if") return new Lexeme(IF);
         if (word === "end") return new Lexeme(END);
@@ -112,12 +122,12 @@ class Lexer{
         if (word === "do") return new Lexeme(DO);
         if (word === "or") return new Lexeme(OR);
         if (word === "and") return new Lexeme(AND);
-        if (word === "times") return new Lexeme(TIMES);
-        if (word === "plus") return new Lexeme(PLUS);
-        if (word === "minus") return new Lexeme(MINUS);
-        if (word === "divided") return new Lexeme(DIVIDED_BY);
-        if (word === "equals" || word === "equal") return new Lexeme(EQUAL_TO);
         if (word === "not") return new Lexeme(NOT);
+        if (word === "def") return new Lexeme(DEF);
+        if (word === "return") return new Lexeme(RETURN);
+        if (word === "with") return new Lexeme(WITH);
+        if (word === "call") return new Lexeme(CALL);
+        if (word === "print") return new Lexeme(PRINT);
         return new Lexeme(UNKNOWN);
     }
 
@@ -259,9 +269,16 @@ class Lexer{
                 this.backup_input();
                 return new Lexeme(MINUS);
             case '*':
-                //check for *=
+                //check for *= and **
                 ch = this.next_char();
                 if (ch == "=") return new Lexeme(TIMES_EQUALS);
+                if (ch == "*"){
+                    //check for **=
+                    ch = this.next_char();
+                    if (ch == "=") return new Lexeme(EXPONENT_EQUALS);
+                    this.backup_input();
+                    return new Lexeme(EXPONENT);
+                }
                 this.backup_input();
                 return new Lexeme(TIMES);
             case '/':
@@ -270,6 +287,12 @@ class Lexer{
                 if (ch == "=") return new Lexeme(DIVIDED_BY_EQUALS);
                 this.backup_input();
                 return new Lexeme(DIVIDED_BY);
+            case '%':
+                //check for %=
+                ch = this.next_char();
+                if (ch == "=") return new Lexeme(MOD_EQUALS);
+                this.backup_input();
+                return new Lexeme(MOD);
             case '<':
                 //check for <=
                 ch = this.next_char();

@@ -18,10 +18,6 @@ some things of note:
 
 --------------------------------------------------------------------------------
 # to do
-
-    -[ ] parser bugs??? (infinite loops instead of syntax errors
-       -[x] "x is 3]"
-       -[x] "3 is 3"
-
-    -[x] finish Parser!!! (to just see whether syntax is good/bad??)
-    -[ ] environment?? parse trees?? evaluating parse trees?
+    -[ ] add grammar rules for classes/objects!!!
+    -[ ] GRAMMAR rules for closures??? default parameter values??
+    -[ ] parse trees??

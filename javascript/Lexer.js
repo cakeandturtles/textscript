@@ -30,7 +30,7 @@ var Lexer = (function () {
     Lexer.prototype.skipWhitespace = function () {
         var ch;
         ch = this.next_char();
-        while (this.isWhitespace(ch) && ch != "\n" && !this.input.failed) {
+        while (this.isWhitespace(ch) && !(ch === "\n") && !this.input.failed) {
             ch = this.next_char();
         }
         this.backup_input();
@@ -91,6 +91,26 @@ var Lexer = (function () {
         return true;
     };
     Lexer.prototype.lexKeyword = function (word) {
+        if (word === "times")
+            return new Lexeme(TIMES);
+        if (word === "plus")
+            return new Lexeme(PLUS);
+        if (word === "minus")
+            return new Lexeme(MINUS);
+        if (word === "divided")
+            return new Lexeme(DIVIDED);
+        if (word === "by")
+            return new Lexeme(BY);
+        if (word === "to")
+            return new Lexeme(TO);
+        if (word === "the")
+            return new Lexeme(THE);
+        if (word === "mod")
+            return new Lexeme(MOD);
+        if (word === "log")
+            return new Lexeme(LOG);
+        if (word === "equals" || word === "equal")
+            return new Lexeme(EQUAL_TO);
         if (word === "is")
             return new Lexeme(IS);
         if (word === "if")
@@ -107,18 +127,18 @@ var Lexer = (function () {
             return new Lexeme(OR);
         if (word === "and")
             return new Lexeme(AND);
-        if (word === "times")
-            return new Lexeme(TIMES);
-        if (word === "plus")
-            return new Lexeme(PLUS);
-        if (word === "minus")
-            return new Lexeme(MINUS);
-        if (word === "divided")
-            return new Lexeme(DIVIDED_BY);
-        if (word === "equals" || word === "equal")
-            return new Lexeme(EQUAL_TO);
         if (word === "not")
             return new Lexeme(NOT);
+        if (word === "def")
+            return new Lexeme(DEF);
+        if (word === "return")
+            return new Lexeme(RETURN);
+        if (word === "with")
+            return new Lexeme(WITH);
+        if (word === "call")
+            return new Lexeme(CALL);
+        if (word === "print")
+            return new Lexeme(PRINT);
         return new Lexeme(UNKNOWN);
     };
     Lexer.prototype.lexNumber = function () {
@@ -239,6 +259,13 @@ var Lexer = (function () {
                 ch = this.next_char();
                 if (ch == "=")
                     return new Lexeme(TIMES_EQUALS);
+                if (ch == "*") {
+                    ch = this.next_char();
+                    if (ch == "=")
+                        return new Lexeme(EXPONENT_EQUALS);
+                    this.backup_input();
+                    return new Lexeme(EXPONENT);
+                }
                 this.backup_input();
                 return new Lexeme(TIMES);
             case '/':
@@ -247,6 +274,12 @@ var Lexer = (function () {
                     return new Lexeme(DIVIDED_BY_EQUALS);
                 this.backup_input();
                 return new Lexeme(DIVIDED_BY);
+            case '%':
+                ch = this.next_char();
+                if (ch == "=")
+                    return new Lexeme(MOD_EQUALS);
+                this.backup_input();
+                return new Lexeme(MOD);
             case '<':
                 ch = this.next_char();
                 if (ch == "=")

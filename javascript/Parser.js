@@ -1,7 +1,6 @@
 var Parser = (function () {
-    function Parser(grammar_text) {
+    function Parser() {
         this.is_valid_syntax = true;
-        this.grammatical_functions = ParserGenerator.GenerateGrammaticalFunctions(grammar_text);
     }
     Parser.prototype.fatal = function (error) {
         print(error);
@@ -12,19 +11,17 @@ var Parser = (function () {
         return this.current_lexeme.type === type;
     };
     Parser.prototype.advance = function () {
+        var old_lexeme = this.current_lexeme;
         this.current_lexeme = this.lexer.lex();
+        return old_lexeme;
     };
     Parser.prototype.match = function (type) {
-        this.matchNoAdvance(type);
-        this.advance();
-    };
-    Parser.prototype.matchNoAdvance = function (type) {
-        if (!this.check(type)) {
-            this.fatal("syntax error: " + type);
+        if (this.check(type)) {
+            return this.advance();
         }
-        else {
-            print(type);
-        }
+        this.fatal("parse error: looking for " + type + ", found " +
+            this.current_lexeme.type + " instead\n");
+        return undefined;
     };
     Parser.prototype.parse = function (program_text) {
         this.is_valid_syntax = true;
@@ -64,7 +61,6 @@ var Parser = (function () {
         this.fatal(msg);
     };
     Parser.prototype.statement = function () {
-        this.grammatical_functions["statement"](this);
     };
     return Parser;
 }());
