@@ -18,8 +18,9 @@ some things of note:
 
 --------------------------------------------------------------------------------
 # to do
-    -[ ] add grammar rules for classes/objects!!!
-    -[ ] GRAMMAR rules for default parameter values??
-    -[ ] can classes be anonymous?
+    -[x] lexing for && and || and ! (and "and" and "or" i think)
+    -[x] add grammar rules for classes/objects!!!
+    -[x] GRAMMAR rules for default parameter values??
+    -[x] can classes be anonymous?
     -[ ] import and from import???
     -[ ] implement parse functions and parse trees??

@@ -29,16 +29,18 @@ def foo do
     return 3
 end
 
-def bar with x do
+#with parameters
+def bar with x, y do
     f is call foo
-    return f + x
-    #return call foo + x
+    return f + x + y
+    #return call foo + x + y
 end
 
-def foobar with x, y do
+#with default parameter values
+def foobar with x, y is 3, z is 4 do
     b is call bar with x
-    return b + y
-    #return call bar with x + y
+    return b + y + z
+    #return (call bar with x) + y + z
 end
 
 # anonymous function definitions/function assignment
@@ -63,8 +65,19 @@ f is foobar with 4
 fval is f with 5
 print fval
 
+#nested function
+def foo with x do
+    #doesn't overwrite bar in global scope
+    def bar with x, y do
+        return x + y
+    end
+    return call bar with x, 3
+end
+
 #class definitions
-class dog
+class dog start
+    my bark_type is "woof"
+
     def dog with name do
         my name is name
     end
@@ -75,7 +88,7 @@ class dog
     end
 
     def bark do
-        print my name + ", woof!"
+        print my name + ", " + my bark_type + "!"
     end
 end
 
@@ -94,8 +107,8 @@ adog name is "alex"
 call adog bark
 
 #class inheritance
-class doggo extends dog
-    def doggo with name, type do
+class doggo extends dog start
+    when created with name, type do
         call super with name
         my type is type
     end
@@ -105,7 +118,7 @@ class doggo extends dog
         print my name
         i is 0
         while i < num do
-            print "woof!"
+            print my bark_type
             i++
         end
     end
@@ -117,4 +130,16 @@ call toby bark
 #setting class methods/attributes
 dog bark is def do
     print "woofers!"
+end
+
+#anonymous class?
+def foo with className do
+    obj is new className with "felix"
+    return obj
+end
+
+call foo with class start
+    when created with name do
+        my name is name
+    end
 end

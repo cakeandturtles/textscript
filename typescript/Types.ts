@@ -36,6 +36,12 @@ const EXPONENT_EQUALS: string = "EXPONENT_EQUALS";
 const MOD: string = "MOD";
 const MOD_EQUALS: string = "MOD_EQUALS";
 const LOG: string = "LOG";
+const AND: string = "AND";
+const OR: string = "OR";
+const BITWISE_AND: string = "BITWISE_AND";
+const BITWISE_XOR: string = "BITWISE_XOR";
+const BITWISE_OR: string = "BITWISE_OR";
+const BITWISE_NOT: string = "BITWISE_NOT";
 
 const END_OF_INPUT: string = "END_OF_INPUT";
 const VARIABLE: string = "VARIABLE";
@@ -44,8 +50,6 @@ const NUMBER: string = "NUMBER";
 const STRING: string = "STRING";
 const BOOLEAN: string = "BOOLEAN";
 const UNKNOWN: string = "UNKNOWN";
-const AND: string = "AND";
-const OR: string = "OR";
 
 //KEYWORDS
 const IS: string = "IS";
@@ -59,6 +63,14 @@ const RETURN: string = "RETURN";
 const WITH: string = "WITH";
 const CALL: string = "CALL";
 const PRINT: string = "PRINT";
+const NEW: string = "NEW";
+const MY: string = "MY";
+const CLASS: string = "CLASS";
+const START: string = "START";
+const EXTENDS: string = "EXTENDS";
+const WHEN: string = "WHEN";
+const CREATED: string = "CREATED";
+const STATIC: string = "STATIC";
 
 //PARSE TREE ONLY TYPES (never Lexed)
 const FUNC_CALL: string = "FUNC_CALL";
