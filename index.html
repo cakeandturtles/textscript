@@ -12,7 +12,6 @@
 <script src="javascript/InputFile.js"></script>
 <script src="javascript/Lexer.js"></script>
 <script src="javascript/Scanner.js"></script>
-<script src="javascript/ParserGenerator.js"></script>
 <script src="javascript/Parser.js"></script>
 
 <script src="javascript/main.js"></script>
@@ -21,7 +20,7 @@
     <textarea style="display: none;" id="language_grammar"></textarea>
     <textarea id="program_txt">x is 3
 y is x times 4
-print(x). print(y)
+print x. print y
 
 # it's probably not a great idea
 # to put so many statements on the same line
@@ -31,11 +30,11 @@ w is y divided by x
 k is -3.2 - 4. j is k.
 
 if z is? 3 do
-    print(x)
-    print(y)
+    print x
+    print y
 end. else
-    while z greater than 3 do print(z). z is z minus 1. end
-    while y >= 4 do print(y). y -= 1. end
+    while z greater than 3 do print z. z is z minus 1. end
+    while y >= 4 do print y. y -= 1. end
 end
 
 # yeah i don't think so</textarea>

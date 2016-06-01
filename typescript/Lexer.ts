@@ -136,6 +136,8 @@ class Lexer{
         if (word === "new") return new Lexeme(NEW);
         if (word === "static") return new Lexeme(STATIC);
         if (word === "my") return new Lexeme(MY);
+        if (word === "import") return new Lexeme(IMPORT);
+        if (word === "as") return new Lexeme(AS);
         return new Lexeme(UNKNOWN);
     }
 

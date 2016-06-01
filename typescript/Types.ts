@@ -71,7 +71,13 @@ const EXTENDS: string = "EXTENDS";
 const WHEN: string = "WHEN";
 const CREATED: string = "CREATED";
 const STATIC: string = "STATIC";
+const IMPORT: string = "IMPORT";
+const AS: string = "AS";
 
 //PARSE TREE ONLY TYPES (never Lexed)
 const FUNC_CALL: string = "FUNC_CALL";
+const FUNC_DEF: string = "FUNC_DEF";
 const IF_TEST: string = "IF_TEST";
+const NEGATIVE: string = "NEGATIVE";
+const LIST: string = "LIST";
+const DICT: string = "DICT";
