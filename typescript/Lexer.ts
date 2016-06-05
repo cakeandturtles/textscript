@@ -1,6 +1,7 @@
 class Lexeme {
     public left: Lexeme = undefined;
     public right: Lexeme = undefined;
+    public precedence: number = 0;
     constructor(public type : string, public value?: any){
     }
 

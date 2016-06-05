@@ -1,13 +1,7 @@
 var opt_newline = (NEWLINE && opt_newline) || _empty_;
-var op0 = NOT || BITWISE_NOT;
-var op1 = exponent;
-var op2 = TIMES || divided_by || MOD;
-var op3 = PLUS || MINUS;
-var op4 = BITWISE_AND;
-var op5 = BITWISE_XOR;
-var op6 = BITWISE_OR;
-var op7 = AND;
-var op8 = OR;
+var op = NOT || BITWISE_NOT || exponent || TIMES || divided_by ||
+    MOD || PLUS || MINUS || BITWISE_AND || BITWISE_XOR ||
+    BITWISE_OR || AND || OR;
 var exponent = EXPONENT || (TO && THE);
 var divided_by = DIVIDED_BY || (DIVIDED && opt_by);
 var opt_by = BY || _empty_;
@@ -42,11 +36,7 @@ var todo = LOG && primary || primary && comparator && primary;
 var expression = (primary && opt_expression_op_rhs) ||
     (OPAREN && expression && CPAREN);
 var opt_expression = expression || _empty_;
-var opt_expression_op_rhs = (op0 && expression) || (op1 && expression) ||
-    (op2 && expression) || (op3 && expression) ||
-    (op4 && expression) || (op5 && expression) ||
-    (op6 && expression) || (op7 && expression) ||
-    (op8 && expression) || _empty_;
+var opt_expression_op_rhs = (op && expression) || _empty_;
 var assignment_statement = assignment && statement_end;
 var assignment = VARIABLE && opt_var && assignment_op && expression;
 var normal_assignment = VARIABLE && IS && expression;

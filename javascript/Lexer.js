@@ -4,6 +4,7 @@ var Lexeme = (function () {
         this.value = value;
         this.left = undefined;
         this.right = undefined;
+        this.precedence = 0;
     }
     Lexeme.prototype.toString = function () {
         return "type: " + this.type + ", value: " + this.value;

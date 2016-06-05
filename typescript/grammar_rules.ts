@@ -1,19 +1,13 @@
 var opt_newline = (NEWLINE && opt_newline) || _empty_;
 
-//levels of precedence (lower number = higher precedence)
-var op0 = NOT || BITWISE_NOT;
-var op1 = exponent;
-var op2 = TIMES || divided_by || MOD;
-var op3 = PLUS || MINUS;
-var op4 = BITWISE_AND;
-var op5 = BITWISE_XOR;
-var op6 = BITWISE_OR;
-var op7 = AND;
-var op8 = OR;
+//levels of precedence (high -> low)
+var op = NOT || BITWISE_NOT || exponent || TIMES || divided_by ||
+         MOD || PLUS || MINUS || BITWISE_AND || BITWISE_XOR ||
+         BITWISE_OR || AND || OR;
 
 var exponent = EXPONENT || (TO && THE);
 var divided_by = DIVIDED_BY || (DIVIDED && opt_by);
-//12 divided 3 is valid in google search
+//"12 divided 3" is valid in google search
 var opt_by = BY || _empty_;
 
 /********************* PRIMARIES ******************************************/
@@ -71,11 +65,7 @@ var expression = (primary && opt_expression_op_rhs) ||
 
 var opt_expression = expression || _empty_;
 
-var opt_expression_op_rhs = (op0 && expression) || (op1 && expression) ||
-                            (op2 && expression) || (op3 && expression) ||
-                            (op4 && expression) || (op5 && expression) ||
-                            (op6 && expression) || (op7 && expression) ||
-                            (op8 && expression) || _empty_;
+var opt_expression_op_rhs = (op && expression) ||  _empty_;
 
 /**************************************************************************/
 

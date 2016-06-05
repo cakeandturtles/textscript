@@ -10,14 +10,16 @@ var Parser = (function () {
     Parser.prototype.check = function (type) {
         return this.current_lexeme.type === type;
     };
-    Parser.prototype.advance = function () {
+    Parser.prototype.advance = function (precedence) {
         var old_lexeme = this.current_lexeme;
         this.current_lexeme = this.lexer.lex();
+        old_lexeme.precedence = precedence;
         return old_lexeme;
     };
-    Parser.prototype.match = function (type) {
+    Parser.prototype.match = function (type, precedence) {
+        if (precedence === void 0) { precedence = 0; }
         if (this.check(type)) {
-            return this.advance();
+            return this.advance(precedence);
         }
         this.fatal("parse error: looking for " + type + ", found " +
             this.current_lexeme.type + " instead\n");
@@ -68,54 +70,54 @@ var Parser = (function () {
         }
         return undefined;
     };
-    Parser.prototype.op0 = function () {
+    Parser.prototype.op = function () {
         if (this.check(NOT))
-            return this.match(NOT);
+            return this.match(NOT, 15);
         if (this.check(BITWISE_NOT))
-            return this.match(BITWISE_NOT);
-    };
-    Parser.prototype.op1 = function () {
-        return this.exponent();
-    };
-    Parser.prototype.op2 = function () {
+            return this.match(BITWISE_NOT, 15);
+        if (this.exponentPending())
+            return this.exponent(14);
         if (this.check(TIMES))
-            return this.match(TIMES);
+            return this.match(TIMES, 14);
         if (this.divided_byPending())
-            return this.divided_by();
+            return this.divided_by(14);
         if (this.check(MOD))
-            return this.match(MOD);
-    };
-    Parser.prototype.op3 = function () {
+            return this.match(MOD, 14);
         if (this.check(PLUS))
-            return this.match(PLUS);
+            return this.match(PLUS, 13);
         if (this.check(MINUS))
-            return this.match(MINUS);
+            return this.match(MINUS, 13);
+        if (this.check(BITWISE_AND))
+            return this.match(BITWISE_AND, 9);
+        if (this.check(BITWISE_XOR))
+            return this.match(BITWISE_XOR, 8);
+        if (this.check(BITWISE_OR))
+            return this.match(BITWISE_OR, 7);
+        if (this.check(AND))
+            return this.match(AND, 6);
+        if (this.check(OR))
+            return this.match(OR, 5);
     };
-    Parser.prototype.op4 = function () {
-        return this.match(BITWISE_AND);
+    Parser.prototype.opPending = function () {
+        return this.check(NOT) || this.check(BITWISE_NOT) || this.exponentPending() ||
+            this.check(TIMES) || this.divided_byPending() || this.check(MOD) ||
+            this.check(PLUS) || this.check(MINUS) || this.check(BITWISE_AND) ||
+            this.check(BITWISE_OR) || this.check(AND) || this.check(OR);
     };
-    Parser.prototype.op5 = function () {
-        return this.match(BITWISE_XOR);
-    };
-    Parser.prototype.op6 = function () {
-        return this.match(BITWISE_OR);
-    };
-    Parser.prototype.op7 = function () {
-        return this.match(AND);
-    };
-    Parser.prototype.op8 = function () {
-        return this.match(OR);
-    };
-    Parser.prototype.exponent = function () {
+    Parser.prototype.exponent = function (precedence) {
         if (this.check(EXPONENT))
-            return this.match(EXPONENT);
+            return this.match(EXPONENT, precedence);
         if (this.check(TO)) {
             this.match(TO);
             this.match(THE);
-            return new Lexeme(EXPONENT);
+            var tree = new Lexeme(EXPONENT);
+            tree.precedence = precedence;
         }
     };
-    Parser.prototype.divided_by = function () {
+    Parser.prototype.exponentPending = function () {
+        return this.check(EXPONENT) || this.check(TO);
+    };
+    Parser.prototype.divided_by = function (precedence) {
         if (this.check(DIVIDED_BY))
             return this.match(DIVIDED_BY);
         if (this.check(DIVIDED)) {
@@ -383,6 +385,48 @@ var Parser = (function () {
     };
     Parser.prototype.new_obj_primaryPending = function () {
         return this.check(NEW);
+    };
+    Parser.prototype.expression = function () {
+        if (this.check(OPAREN)) {
+            this.match(OPAREN);
+            var tree = this.expression();
+            tree.precedence = 19;
+            this.match(CPAREN);
+            return tree;
+        }
+        if (this.primaryPending()) {
+            var tree = this.primary();
+            var rhs = this.opt_expression_rhs();
+            if (rhs !== undefined) {
+                var primary = tree;
+                tree = rhs;
+                while (rhs.left !== undefined) {
+                    rhs = rhs.left;
+                }
+                rhs.left = primary;
+            }
+            return tree;
+        }
+    };
+    Parser.prototype.expressionPending = function () {
+        return this.check(OPAREN) || this.primaryPending();
+    };
+    Parser.prototype.opt_expression_rhs = function () {
+        if (this.opPending()) {
+            var op = this.op();
+            var expression = this.expression();
+            if (op.precedence > expression.precedence) {
+                var primary = expression.left;
+                op.right = primary;
+                expression.left = op;
+                op = expression;
+            }
+            else {
+                op.right = expression;
+            }
+            return op;
+        }
+        return undefined;
     };
     Parser.prototype.statement = function () {
     };

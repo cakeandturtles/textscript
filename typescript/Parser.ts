@@ -17,14 +17,15 @@ class Parser{
     protected check(type: string): boolean {
         return this.current_lexeme.type === type;
     }
-    private advance(): Lexeme {
+    private advance(precedence: number): Lexeme {
         var old_lexeme = this.current_lexeme;
         this.current_lexeme = this.lexer.lex();
+        old_lexeme.precedence = precedence;
         return old_lexeme;
     }
-    protected match(type: string): Lexeme {
+    protected match(type: string, precedence: number = 0): Lexeme {
         if (this.check(type)){
-            return this.advance();
+            return this.advance(precedence);
         }
         this.fatal("parse error: looking for " + type + ", found " +
                    this.current_lexeme.type + " instead\n");
@@ -83,56 +84,58 @@ class Parser{
         return undefined;
     }
 
-    private op0(): Lexeme{
+    private op(): Lexeme{
+        //NOTE!: operators might have different precedences!!!
+        // = second value passed to each match/function call that's returned
         if (this.check(NOT))
-            return this.match(NOT);
+            return this.match(NOT, 15);
         if (this.check(BITWISE_NOT))
-            return this.match(BITWISE_NOT);
-    }
-    private op1(): Lexeme{
-        return this.exponent();
-    }
-    private op2(): Lexeme{
+            return this.match(BITWISE_NOT, 15);
+        if (this.exponentPending())
+            return this.exponent(14);
         if (this.check(TIMES))
-            return this.match(TIMES);
+            return this.match(TIMES, 14);
         if (this.divided_byPending())
-            return this.divided_by();
+            return this.divided_by(14);
         if (this.check(MOD))
-            return this.match(MOD);
-    }
-    private op3(): Lexeme{
+            return this.match(MOD, 14);
         if (this.check(PLUS))
-            return this.match(PLUS);
+            return this.match(PLUS, 13);
         if (this.check(MINUS))
-            return this.match(MINUS);
+            return this.match(MINUS, 13);
+        if (this.check(BITWISE_AND))
+            return this.match(BITWISE_AND, 9);
+        if (this.check(BITWISE_XOR))
+            return this.match(BITWISE_XOR, 8);
+        if (this.check(BITWISE_OR))
+            return this.match(BITWISE_OR, 7);
+        if (this.check(AND))
+            return this.match(AND, 6);
+        if (this.check(OR))
+            return this.match(OR, 5);
     }
-    private op4(): Lexeme{
-        return this.match(BITWISE_AND);
-    }
-    private op5(): Lexeme{
-        return this.match(BITWISE_XOR);
-    }
-    private op6(): Lexeme{
-        return this.match(BITWISE_OR);
-    }
-    private op7(): Lexeme{
-        return this.match(AND);
-    }
-    private op8(): Lexeme{
-        return this.match(OR);
+    private opPending(): boolean{
+        return this.check(NOT) || this.check(BITWISE_NOT) || this.exponentPending() ||
+                this.check(TIMES) || this.divided_byPending() || this.check(MOD) ||
+                this.check(PLUS) || this.check(MINUS) || this.check(BITWISE_AND) ||
+                this.check(BITWISE_OR) || this.check(AND) || this.check(OR);
     }
 
-    private exponent(): Lexeme{
+    private exponent(precedence: number): Lexeme{
         if (this.check(EXPONENT))
-            return this.match(EXPONENT);
+            return this.match(EXPONENT, precedence);
         if (this.check(TO)){
             this.match(TO);
             this.match(THE);
-            return new Lexeme(EXPONENT);
+            var tree = new Lexeme(EXPONENT);
+            tree.precedence = precedence;
         }
     }
+    private exponentPending(): boolean{
+        return this.check(EXPONENT) || this.check(TO);
+    }
 
-    private divided_by(): Lexeme{
+    private divided_by(precedence: number): Lexeme{
         if (this.check(DIVIDED_BY))
             return this.match(DIVIDED_BY);
         if (this.check(DIVIDED)){
@@ -426,6 +429,82 @@ class Parser{
     }
 
     /************************ EXPRESSIONS ************************/
+
+    private expression(): Lexeme{
+        if (this.check(OPAREN)){
+            this.match(OPAREN);
+            var tree = this.expression();
+            //if we are in parenthesis, set highest order of precedence
+            tree.precedence = 19;
+            this.match(CPAREN);
+            return tree;
+        }
+        if (this.primaryPending()){
+            var tree = this.primary();
+            var rhs = this.opt_expression_rhs();
+            if (rhs !== undefined){
+                //because we're dealing with operators with different precedence
+                //the opt_expression_rhs may have returned a tree that doesn't
+                //have a left subtree immediately empty
+                //remember the primary
+                var primary = tree;
+                //set the tree to the expression rhs
+                tree = rhs;
+                //move through the rhs's left children until its free
+                while (rhs.left !== undefined){
+                    rhs = rhs.left;
+                }
+                //set the first empty left child to the primary
+                rhs.left = primary;
+                //this in effect allows 3*4+5 and similar to be parsed correctly
+                //resulting in          +
+                //                    *   5
+                //                  3   4
+
+                //instead of            *
+                //                    3   +
+                //                       4 5
+            }
+            return tree;
+        }
+    }
+    private expressionPending(): boolean{
+        return this.check(OPAREN) || this.primaryPending();
+    }
+
+    private opt_expression_rhs(): Lexeme{
+        if (this.opPending()){
+            var op = this.op();
+            var expression = this.expression();
+            //dealing with operators with different precedence!!!
+            //if current operator has higher precedence
+            //than we need to push it lower on the parse tree
+            //(so that it will be evaluated sooner?)
+            //(e.g. for (3*4+5)
+            if (op.precedence > expression.precedence){
+                //remember the primary on the left of the expression
+                // e.g. the "4" in "4+5"
+                var primary = expression.left;
+                //set the current operator with higher precedence's right child
+                //to the primary (e.g. "*"'s right child = 4)
+                op.right = primary;
+                //overwrite the primary we remembered on the expression's left child
+                //to be the operator with the higher precedence
+                //e.g. from _*(4+5) to (_*4)+5
+                expression.left = op;
+                //and finally, set the value that we will return to the expression
+                //since the actual tree we would have returned is now its left child
+                op = expression;
+            }else{
+                //otherwise if we're not dealing with higher precedence operator
+                //just set the right child of the operator
+                //(e.g. _+(4+5) is fine)
+                op.right = expression;
+            }
+            return op;
+        }
+        return undefined;
+    }
 
 
     /************************ STATEMENTS ************************/
