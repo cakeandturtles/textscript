@@ -142,8 +142,6 @@ var Lexer = (function () {
             return new Lexeme(PRINT);
         if (word === "class")
             return new Lexeme(CLASS);
-        if (word === "start")
-            return new Lexeme(START);
         if (word === "extends")
             return new Lexeme(EXTENDS);
         if (word === "when")
@@ -160,6 +158,8 @@ var Lexer = (function () {
             return new Lexeme(IMPORT);
         if (word === "as")
             return new Lexeme(AS);
+        if (word === "global")
+            return new Lexeme(GLOBAL);
         return new Lexeme(UNKNOWN);
     };
     Lexer.prototype.lexNumber = function () {
@@ -337,6 +337,12 @@ var Lexer = (function () {
                 return new Lexeme(BITWISE_NOT);
             case '!':
                 return new Lexeme(NOT);
+            case '\'':
+                ch = this.next_char();
+                if (ch == 's')
+                    return new Lexeme(APOSTROPHE_S);
+                this.backup_input();
+                return new Lexeme(APOSTROPHE);
             case '.':
                 ch = this.next_char();
                 this.backup_input();
@@ -354,7 +360,7 @@ var Lexer = (function () {
             this.backup_input();
             return this.lexWord();
         }
-        else if (ch == '"' || ch == "'") {
+        else if (ch == '"') {
             this.backup_input();
             return this.lexString();
         }

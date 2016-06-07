@@ -17,17 +17,30 @@ b is a to the 2
 #c is log(100)
 c is log 100
 
-if z is? 3 do
+if z equals 3 do
     print x
     print y
 end. else
-    while z greater than 3 do print z. z is z minus 1. end
+    while z >= 3 do print z. z is z minus 1. end
 end
+
+if z equals 3
+    x is 3.
 
 # named function definitions
 def foo do
     return 3
 end
+
+x is 3.
+print x.
+#accessing "global scope"
+def glob do
+    global x
+    x is 4
+end
+call glob
+print x.
 
 #with parameters
 def bar with x, y do
@@ -75,7 +88,7 @@ def foo with x do
 end
 
 #class definitions
-class dog start
+class dog do
     my bark_type is "woof"
 
     def dog with name do
@@ -96,18 +109,18 @@ end
 adog is new dog with "toby"
 
 #object method calling
-call adog bark
+call adog's bark
 #static class method calling
-call dog summon
+call dog's summon
 #it probably looks all better if you make class names start with capital letter...
 
 #object attribute getting/setting
-print adog name
-adog name is "alex"
-call adog bark
+print adog's name
+adog's name is "alex"
+call adog's bark
 
 #class inheritance
-class doggo extends dog start
+class doggo extends dog do
     when created with name, type do
         call super with name
         my type is type
@@ -125,7 +138,7 @@ class doggo extends dog start
 end
 
 toby is new doggo with "toby", "dragon"
-call toby bark
+call toby 's bark
 
 #setting class methods/attributes
 dog bark is def do
@@ -138,8 +151,24 @@ def foo with className do
     return obj
 end
 
-call foo with class start
-    when created with name do
-        my name is name
+#lmfao
+#any ide/whatever for this needs to have do/end bracket match highlighting
+call foo with class do when created with name do my name is name end end
+
+class apple do
+    static class bar do
+        static class cat do
+            static class dogg do
+                static def fight do
+                    print "fight me!!!"
+                end
+            end
+        end
     end
 end
+
+call apple's bar's cat's dogg's fight
+
+#static func def's in global scope are equivalent to non static
+#(basically just ignore the static if we are not inside a class?)
+#otherwise would have to write evaluator or parser to check if we are inside class

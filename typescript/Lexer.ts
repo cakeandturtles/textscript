@@ -130,7 +130,6 @@ class Lexer{
         if (word === "call") return new Lexeme(CALL);
         if (word === "print") return new Lexeme(PRINT);
         if (word === "class") return new Lexeme(CLASS);
-        if (word === "start") return new Lexeme(START);
         if (word === "extends") return new Lexeme(EXTENDS);
         if (word === "when") return new Lexeme(WHEN);
         if (word === "created") return new Lexeme(CREATED);
@@ -139,6 +138,7 @@ class Lexer{
         if (word === "my") return new Lexeme(MY);
         if (word === "import") return new Lexeme(IMPORT);
         if (word === "as") return new Lexeme(AS);
+        if (word === "global") return new Lexeme(GLOBAL);
         return new Lexeme(UNKNOWN);
     }
 
@@ -340,6 +340,12 @@ class Lexer{
                 return new Lexeme(BITWISE_NOT);
             case '!':
                 return new Lexeme(NOT);
+            case '\'':
+                //check for APOSTROPHE_S
+                ch = this.next_char();
+                if (ch == 's') return new Lexeme(APOSTROPHE_S);
+                this.backup_input();
+                return new Lexeme(APOSTROPHE);
             case '.':
                 //TODO:: ... ?
                 //check for .012 non digit prepended decimals
@@ -367,7 +373,7 @@ class Lexer{
             this.backup_input();
             return this.lexWord();
         }
-        else if (ch == '"' || ch == "'"){
+        else if (ch == '"'){
             this.backup_input();
             return this.lexString();
         }

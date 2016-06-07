@@ -66,17 +66,23 @@ const PRINT: string = "PRINT";
 const NEW: string = "NEW";
 const MY: string = "MY";
 const CLASS: string = "CLASS";
-const START: string = "START";
 const EXTENDS: string = "EXTENDS";
 const WHEN: string = "WHEN";
 const CREATED: string = "CREATED";
 const STATIC: string = "STATIC";
 const IMPORT: string = "IMPORT";
 const AS: string = "AS";
+const GLOBAL: string = "GLOBAL";
+
+//KEYSUFFIX
+const APOSTROPHE: string = "APOSTROPHE";
+const APOSTROPHE_S: string = "APOSTROPHE_S";
 
 //PARSE TREE ONLY TYPES (never Lexed)
+const START: string = "START";
 const FUNC_CALL: string = "FUNC_CALL";
 const FUNC_DEF: string = "FUNC_DEF";
+const STATIC_FUNC_DEF: string = "STATIC_FUNC_DEF";
 const IF_TEST: string = "IF_TEST";
 const NEGATIVE: string = "NEGATIVE";
 const LIST: string = "LIST";
