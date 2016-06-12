@@ -10,6 +10,7 @@ function runProgram(){
 
     parser = new Parser();
     parser.parse(program_txt);
+    parser.prettyPrint();
 }
 
 function print(value:any): void{

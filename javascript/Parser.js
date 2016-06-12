@@ -32,7 +32,7 @@ var Parser = (function () {
         var i = 0;
         var prev_index = 0;
         var tree = new Lexeme(START);
-        var root = tree;
+        this.root = tree;
         while (this.current_lexeme.type != END_OF_INPUT) {
             var statement = this.statement();
             var index = this.lexer.getCharIndex();
@@ -45,14 +45,10 @@ var Parser = (function () {
             tree = statement;
             i++;
             prev_index = index;
-            print("number of statements: " + i);
         }
-        if (this.is_valid_syntax) {
-            alert("good syntax");
-        }
-        else
-            alert("bad syntax");
-        print(root);
+    };
+    Parser.prototype.prettyPrint = function () {
+        PrettyPrinter.prettyPrint(this.root);
     };
     Parser.prototype.syntaxErrorAtPosition = function () {
         var msg = "";
@@ -727,12 +723,18 @@ var Parser = (function () {
             this.import_statementPending();
     };
     Parser.prototype.statement_end = function () {
-        if (this.check(PERIOD))
-            return this.match(PERIOD);
-        if (this.check(NEWLINE))
-            return this.match(NEWLINE);
-        if (this.check(END_OF_INPUT))
-            return this.match(END_OF_INPUT);
+        if (this.check(PERIOD)) {
+            this.match(PERIOD);
+            return new Lexeme(STATEMENT_END);
+        }
+        if (this.check(NEWLINE)) {
+            this.match(NEWLINE);
+            return new Lexeme(STATEMENT_END);
+        }
+        if (this.check(END_OF_INPUT)) {
+            this.match(END_OF_INPUT);
+            return new Lexeme(STATEMENT_END);
+        }
         this.fatal("statement end expected!");
     };
     Parser.prototype.statement_list = function () {

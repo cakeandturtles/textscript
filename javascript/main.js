@@ -8,6 +8,7 @@ function runProgram() {
     var program_txt = program_txt_element.value;
     parser = new Parser();
     parser.parse(program_txt);
+    parser.prettyPrint();
 }
 function print(value) {
     console.log(value);

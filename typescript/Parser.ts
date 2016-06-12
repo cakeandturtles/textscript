@@ -1,7 +1,7 @@
 class Parser{
     protected current_lexeme: Lexeme;
     protected lexer: Lexer;
-    protected grammatical_functions: { [id: string] : Function};
+    protected root: Lexeme;
 
     protected is_valid_syntax: boolean = true;
 
@@ -39,7 +39,7 @@ class Parser{
         let i: number = 0;
         let prev_index: number = 0;
         var tree = new Lexeme(START);
-        var root = tree;
+        this.root = tree;
         while (this.current_lexeme.type != END_OF_INPUT){
             var statement = this.statement();
             let index: number = this.lexer.getCharIndex();
@@ -54,14 +54,11 @@ class Parser{
 
             i++;
             prev_index = index;
-            print("number of statements: " + i);
         }
+    }
 
-        if (this.is_valid_syntax){
-            alert("good syntax");
-        }else alert("bad syntax");
-
-        print(root);
+    public prettyPrint(): void{
+        PrettyPrinter.prettyPrint(this.root);
     }
 
     private syntaxErrorAtPosition(): void{
@@ -852,13 +849,19 @@ class Parser{
     }
 
     private statement_end(): Lexeme{
-        if (this.check(PERIOD))
-            return this.match(PERIOD);
-        if (this.check(NEWLINE))
-            return this.match(NEWLINE);
+        if (this.check(PERIOD)){
+            this.match(PERIOD);
+            return new Lexeme(STATEMENT_END);
+        }
+        if (this.check(NEWLINE)){
+            this.match(NEWLINE);
+            return new Lexeme(STATEMENT_END);
+        }
         //TODO:: will this break with the lexer?
-        if (this.check(END_OF_INPUT))
-            return this.match(END_OF_INPUT);
+        if (this.check(END_OF_INPUT)){
+            this.match(END_OF_INPUT);
+            return new Lexeme(STATEMENT_END);
+        }
         this.fatal("statement end expected!");
     }
 

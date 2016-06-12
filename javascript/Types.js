@@ -78,3 +78,4 @@ var IF_TEST = "IF_TEST";
 var NEGATIVE = "NEGATIVE";
 var LIST = "LIST";
 var DICT = "DICT";
+var STATEMENT_END = "STATEMENT_END";

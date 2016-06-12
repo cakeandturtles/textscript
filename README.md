@@ -2,8 +2,15 @@
 following along with http://beastie.cs.ua.edu/cs403/schedule.html
 
 --------------------------------------------------------------------------------
-i made a parser generator and now all the formal grammar is defined (in albeit slightly different syntax) in Grammar.ts and Grammar.js
-    -so therefore you GOTTA update that if you tryna update the parser :-)
+(WHEN MAKING ANY CHANGES TO THE LANGUAGE:
+    must update
+                Types.ts (maybe)
+                Lexer.ts (probably)
+                grammar_rules.ts
+                Parser.ts
+                PrettyPrinter.ts
+                Evaluator.ts
+)
 
 some things of note:
     0. most grammar design decisions were chosen due to me messing around on the android keyboard and seeing what would feel nicest to write as a text language (nicest in terms of me thinking it was cute and in terms of minimizing keyboard mode switching for common cases)
@@ -53,5 +60,6 @@ some things of note:
     -[x] static definitions??? (what do they mean in global scope)
     -[x] allow single line blocks without do/end ("if z equals 3 x is 3.")
     -[ ] allow chaining assignments or mult var assignments? ("x is y is 3" AND/OR "x, y is 3, 4")
+    -[ ] pretty printer
     -[ ] evaluating parse trees
         -[ ] how do you know scope? nested environments?
