@@ -3,14 +3,18 @@ function main() : void{
     program_run.onclick = runProgram;
 }
 
-var parser;
+var parser, evaluator;
 function runProgram(){
     var program_txt_element = <HTMLInputElement>document.getElementById("program_txt");
     var program_txt = program_txt_element.value;
 
     parser = new Parser();
-    parser.parse(program_txt);
-    parser.prettyPrint();
+
+    var root = parser.parse(program_txt);
+    PrettyPrinter.prettyPrint(root);
+
+    evaluator = new Evaluator();
+    evaluator.eval(root);
 }
 
 function print(value:any): void{

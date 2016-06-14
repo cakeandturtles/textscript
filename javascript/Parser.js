@@ -46,9 +46,7 @@ var Parser = (function () {
             i++;
             prev_index = index;
         }
-    };
-    Parser.prototype.prettyPrint = function () {
-        PrettyPrinter.prettyPrint(this.root);
+        return this.root;
     };
     Parser.prototype.syntaxErrorAtPosition = function () {
         var msg = "";
@@ -72,6 +70,11 @@ var Parser = (function () {
         return undefined;
     };
     Parser.prototype.op_one_param = function () {
+        if (this.check(MINUS)) {
+            var negative = this.match(MINUS, 15);
+            negative.type = NEGATIVE;
+            return negative;
+        }
         if (this.check(NOT))
             return this.match(NOT, 15);
         if (this.check(BITWISE_NOT))
@@ -81,7 +84,7 @@ var Parser = (function () {
         this.fatal("operator expected!");
     };
     Parser.prototype.op_one_paramPending = function () {
-        return this.check(NOT) || this.check(BITWISE_NOT) || this.check(LOG);
+        return this.check(MINUS) || this.check(NOT) || this.check(BITWISE_NOT) || this.check(LOG);
     };
     Parser.prototype.op_two_params = function () {
         if (this.exponentPending())
@@ -121,12 +124,11 @@ var Parser = (function () {
         this.fatal("operator expected!");
     };
     Parser.prototype.op_two_paramsPending = function () {
-        return this.check(NOT) || this.check(BITWISE_NOT) || this.exponentPending() ||
-            this.check(TIMES) || this.divided_byPending() || this.check(MOD) ||
-            this.check(PLUS) || this.check(MINUS) || this.check(LESS_THAN) || this.check(LESS_THAN_EQUAL) ||
-            this.check(GREATER_THAN) || this.check(GREATER_THAN_EQUAL) || this.check(EQUAL_TO) ||
-            this.check(NOT_EQUAL_TO) || this.check(BITWISE_AND) || this.check(BITWISE_OR) ||
-            this.check(AND) || this.check(OR);
+        return this.exponentPending() || this.check(TIMES) || this.divided_byPending() ||
+            this.check(MOD) || this.check(PLUS) || this.check(MINUS) || this.check(LESS_THAN) ||
+            this.check(LESS_THAN_EQUAL) || this.check(GREATER_THAN) || this.check(GREATER_THAN_EQUAL) ||
+            this.check(EQUAL_TO) || this.check(NOT_EQUAL_TO) || this.check(BITWISE_AND) ||
+            this.check(BITWISE_OR) || this.check(AND) || this.check(OR);
     };
     Parser.prototype.exponent = function (precedence) {
         if (this.check(EXPONENT))
@@ -162,8 +164,8 @@ var Parser = (function () {
         return undefined;
     };
     Parser.prototype.primary = function () {
-        if (this.num_primaryPending())
-            return this.num_primary();
+        if (this.check(NUMBER))
+            return this.match(NUMBER);
         if (this.check(BOOLEAN))
             return this.match(BOOLEAN);
         if (this.check(STRING))
@@ -182,34 +184,13 @@ var Parser = (function () {
             return this.event_handler_primary();
         if (this.new_obj_primaryPending())
             return this.new_obj_primary();
-        if (this.expressionPending())
-            return this.expression();
         this.fatal("primary expected!");
     };
     Parser.prototype.primaryPending = function () {
-        return this.num_primaryPending() || this.check(BOOLEAN) || this.check(STRING) ||
+        return this.check(NUMBER) || this.check(BOOLEAN) || this.check(STRING) ||
             this.var_primaryPending() || this.list_primaryPending() ||
             this.dict_primaryPending() || this.func_primaryPending() ||
-            this.new_obj_primaryPending() || this.expressionPending();
-    };
-    Parser.prototype.opt_primary = function () {
-        if (this.primaryPending())
-            return this.primary();
-        return undefined;
-    };
-    Parser.prototype.num_primary = function () {
-        if (this.check(NUMBER))
-            return this.match(NUMBER);
-        if (this.check(MINUS)) {
-            var tree = this.match(MINUS);
-            tree.type = NEGATIVE;
-            tree.right = this.match(NUMBER);
-            return tree;
-        }
-        this.fatal("number primary expected!");
-    };
-    Parser.prototype.num_primaryPending = function () {
-        return this.check(NUMBER) || this.check(MINUS);
+            this.new_obj_primaryPending();
     };
     Parser.prototype.opt_my = function () {
         if (this.check(MY)) {
@@ -256,14 +237,14 @@ var Parser = (function () {
     Parser.prototype.opt_with_call = function () {
         if (this.check(WITH)) {
             var tree = this.match(WITH);
-            var primary = this.primary();
+            var expression = this.expression();
             var temp = this.opt_list_continuation();
             if (temp !== undefined) {
-                temp.left = primary;
+                temp.left = expression;
                 tree.right = temp;
             }
             else {
-                tree.right = primary;
+                tree.right = expression;
             }
             return tree;
         }
@@ -286,7 +267,7 @@ var Parser = (function () {
         return undefined;
     };
     Parser.prototype.list_body = function () {
-        var tree = this.primary();
+        var tree = this.expression();
         var temp = this.opt_list_continuation();
         if (temp !== undefined) {
             temp.left = tree;
@@ -302,14 +283,14 @@ var Parser = (function () {
         if (this.check(COMMA)) {
             var tree = this.match(COMMA);
             this.opt_newline();
-            var primary = this.primary();
+            var expression = this.expression();
             var temp = this.opt_list_continuation();
             if (temp !== undefined) {
-                temp.left = primary;
+                temp.left = expression;
                 tree.right = temp;
             }
             else {
-                tree.right = primary;
+                tree.right = expression;
             }
             return tree;
         }
@@ -397,9 +378,9 @@ var Parser = (function () {
         var variable = this.match(VARIABLE);
         if (this.check(IS)) {
             var is = this.match(IS);
-            var primary = this.primary();
+            var expression = this.expression();
             is.left = variable;
-            is.right = primary;
+            is.right = expression;
             var temp = this.opt_with_default_continuation();
             if (temp !== undefined) {
                 temp.left = is;
@@ -491,6 +472,11 @@ var Parser = (function () {
     Parser.prototype.expressionPending = function () {
         return this.check(OPAREN) || this.primaryPending();
     };
+    Parser.prototype.opt_expression = function () {
+        if (this.expressionPending())
+            return this.expression();
+        return undefined;
+    };
     Parser.prototype.opt_expression_rhs = function () {
         if (this.op_two_paramsPending()) {
             var op = this.op_two_params();
@@ -518,14 +504,7 @@ var Parser = (function () {
         return this.assignmentPending();
     };
     Parser.prototype.assignment = function () {
-        var temp = this.opt_my();
-        var variable = this.match(VARIABLE);
-        var opt_obj_access = this.opt_obj_access();
-        variable.right = opt_obj_access;
-        if (temp !== undefined) {
-            temp.right = variable;
-            variable = temp;
-        }
+        var variable = this.var_primary();
         var assignment_op = this.assignment_op();
         assignment_op.left = variable;
         assignment_op.right = this.expression();
@@ -566,7 +545,7 @@ var Parser = (function () {
         var if_ = this.match(IF);
         var if_test = new Lexeme(IF_TEST);
         if_.left = if_test;
-        var boolean = this.primary();
+        var boolean = this.expression();
         if_test.left = boolean;
         var block = this.block();
         if_test.right = block;
@@ -604,24 +583,27 @@ var Parser = (function () {
             var statements = this.statement_list();
             this.opt_newline();
             var end_ = this.match(END);
-            return statements;
+            do_.left = statements;
+            return do_;
         }
         else {
-            return this.statement();
+            var do_ = new Lexeme(DO);
+            do_.left = this.statement();
+            return do_;
         }
     };
     Parser.prototype.blockPending = function () {
         this.opt_newline();
-        return this.check(DO);
+        return this.check(DO) || this.statementPending();
     };
     Parser.prototype.while_statement = function () {
         var while_ = this.match(WHILE);
-        var primary = this.match(primary);
+        var expression = this.expression();
         var block = this.block();
         while_.left = primary;
         while_.right = block;
         var statement_end = new Lexeme(NEWLINE);
-        statement_end.left = while_statement;
+        statement_end.left = while_;
         return statement_end;
     };
     Parser.prototype.while_statementPending = function () {
@@ -629,8 +611,8 @@ var Parser = (function () {
     };
     Parser.prototype.print_statement = function () {
         var print = this.match(PRINT);
-        var primary = this.primary();
-        print.right = primary;
+        var expression = this.expression();
+        print.right = expression;
         var statement_end = this.statement_end();
         statement_end.left = print;
         return statement_end;
@@ -638,14 +620,14 @@ var Parser = (function () {
     Parser.prototype.print_statementPending = function () {
         return this.check(PRINT);
     };
-    Parser.prototype.primary_statement = function () {
-        var primary = this.opt_primary();
+    Parser.prototype.expression_statement = function () {
+        var expression = this.opt_expression();
         var statement_end = this.statement_end();
-        statement_end.left = primary;
+        statement_end.left = expression;
         return statement_end;
     };
-    Parser.prototype.primary_statementPending = function () {
-        return this.primaryPending();
+    Parser.prototype.expression_statementPending = function () {
+        return this.expressionPending();
     };
     Parser.prototype.import_statement = function () {
         var import_ = this.match(IMPORT);
@@ -709,8 +691,8 @@ var Parser = (function () {
             return this.print_statement();
         if (this.assignment_statementPending())
             return this.assignment_statement();
-        if (this.primary_statementPending())
-            return this.primary_statement();
+        if (this.expression_statementPending())
+            return this.expression_statement();
         if (this.class_def_statementPending())
             return this.class_def_statement();
         if (this.import_statementPending())
@@ -719,7 +701,7 @@ var Parser = (function () {
     Parser.prototype.statementPending = function () {
         return this.if_statementPending() || this.while_statementPending() ||
             this.print_statementPending() || this.assignment_statementPending() ||
-            this.primary_statementPending() || this.class_def_statementPending() ||
+            this.expression_statementPending() || this.class_def_statementPending() ||
             this.import_statementPending();
     };
     Parser.prototype.statement_end = function () {

@@ -63,3 +63,7 @@ some things of note:
     -[ ] pretty printer
     -[ ] evaluating parse trees
         -[ ] how do you know scope? nested environments?
+    -[ ] evaluating import statements using filename as module names??? (see eval_import_statement)
+
+    -[ ] allow developers to create their own interfaces between textscript and javascript?
+        -[ ] or call native javascript functions???

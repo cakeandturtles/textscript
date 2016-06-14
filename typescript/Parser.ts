@@ -32,7 +32,7 @@ class Parser{
         return undefined;
     }
 
-    public parse(program_text: string): void {
+    public parse(program_text: string): Lexeme {
         this.is_valid_syntax = true;
         this.lexer = new Lexer(program_text);
         this.current_lexeme = this.lexer.lex();
@@ -55,10 +55,7 @@ class Parser{
             i++;
             prev_index = index;
         }
-    }
-
-    public prettyPrint(): void{
-        PrettyPrinter.prettyPrint(this.root);
+        return this.root;
     }
 
     private syntaxErrorAtPosition(): void{
@@ -88,6 +85,11 @@ class Parser{
     }
 
     private op_one_param(): Lexeme{
+        if (this.check(MINUS)){
+            var negative = this.match(MINUS, 15);
+            negative.type = NEGATIVE;
+            return negative;
+        }
         if (this.check(NOT))
             return this.match(NOT, 15);
         if (this.check(BITWISE_NOT))
@@ -97,7 +99,7 @@ class Parser{
         this.fatal("operator expected!");
     }
     private op_one_paramPending(): boolean{
-        return this.check(NOT) || this.check(BITWISE_NOT) || this.check(LOG);
+        return this.check(MINUS) || this.check(NOT) || this.check(BITWISE_NOT) || this.check(LOG);
     }
 
     private op_two_params(): Lexeme{
@@ -140,12 +142,11 @@ class Parser{
         this.fatal("operator expected!");
     }
     private op_two_paramsPending(): boolean{
-        return this.check(NOT) || this.check(BITWISE_NOT) || this.exponentPending() ||
-                this.check(TIMES) || this.divided_byPending() || this.check(MOD) ||
-                this.check(PLUS) || this.check(MINUS) || this.check(LESS_THAN) || this.check(LESS_THAN_EQUAL) ||
-                this.check(GREATER_THAN) || this.check(GREATER_THAN_EQUAL) || this.check(EQUAL_TO) ||
-                this.check(NOT_EQUAL_TO) || this.check(BITWISE_AND) || this.check(BITWISE_OR) ||
-                this.check(AND) || this.check(OR);
+        return this.exponentPending() || this.check(TIMES) || this.divided_byPending() ||
+               this.check(MOD) || this.check(PLUS) || this.check(MINUS) || this.check(LESS_THAN) ||
+               this.check(LESS_THAN_EQUAL) || this.check(GREATER_THAN) || this.check(GREATER_THAN_EQUAL) ||
+               this.check(EQUAL_TO) || this.check(NOT_EQUAL_TO) || this.check(BITWISE_AND) ||
+               this.check(BITWISE_OR) || this.check(AND) || this.check(OR);
     }
 
     private exponent(precedence: number): Lexeme{
@@ -186,8 +187,8 @@ class Parser{
 
     /********************* PRIMARIES ******************************************/
     private primary(): Lexeme{
-        if (this.num_primaryPending())
-            return this.num_primary();
+        if (this.check(NUMBER))
+            return this.match(NUMBER);
         if (this.check(BOOLEAN))
             return this.match(BOOLEAN);
         if (this.check(STRING))
@@ -206,36 +207,13 @@ class Parser{
             return this.event_handler_primary();
         if (this.new_obj_primaryPending())
             return this.new_obj_primary();
-        if (this.expressionPending())
-            return this.expression();
         this.fatal("primary expected!");
     }
     private primaryPending(): boolean{
-        return this.num_primaryPending() || this.check(BOOLEAN) || this.check(STRING) ||
+        return this.check(NUMBER) || this.check(BOOLEAN) || this.check(STRING) ||
                this.var_primaryPending() || this.list_primaryPending() ||
                this.dict_primaryPending() || this.func_primaryPending() ||
-               this.new_obj_primaryPending() || this.expressionPending();
-    }
-
-    private opt_primary(): Lexeme{
-        if (this.primaryPending())
-            return this.primary();
-        return undefined;
-    }
-
-    private num_primary(): Lexeme{
-        if (this.check(NUMBER))
-            return this.match(NUMBER);
-        if (this.check(MINUS)){
-            var tree = this.match(MINUS);
-            tree.type = NEGATIVE;
-            tree.right = this.match(NUMBER);
-            return tree;
-        }
-        this.fatal("number primary expected!");
-    }
-    private num_primaryPending(): boolean{
-        return this.check(NUMBER) || this.check(MINUS);
+               this.new_obj_primaryPending();
     }
 
     /************************ VAR PRIMARIES (and func calls) ************************/
@@ -289,13 +267,13 @@ class Parser{
     private opt_with_call(): Lexeme{
         if (this.check(WITH)){
             var tree = this.match(WITH);
-            var primary = this.primary();
+            var expression = this.expression();
             var temp = this.opt_list_continuation();
             if (temp !== undefined){
-                temp.left = primary;
+                temp.left = expression;
                 tree.right = temp;
             }else{
-                tree.right = primary;
+                tree.right = expression;
             }
             return tree;
         }
@@ -323,7 +301,7 @@ class Parser{
     }
 
     private list_body(): Lexeme{
-        var tree = this.primary();
+        var tree = this.expression();
         var temp = this.opt_list_continuation();
         if (temp !== undefined){
             temp.left = tree;
@@ -340,13 +318,13 @@ class Parser{
         if (this.check(COMMA)){
             var tree = this.match(COMMA);
             this.opt_newline();
-            var primary = this.primary();
+            var expression = this.expression();
             var temp = this.opt_list_continuation();
             if (temp !== undefined){
-                temp.left = primary;
+                temp.left = expression;
                 tree.right = temp;
             }else{
-                tree.right = primary;
+                tree.right = expression;
             }
             return tree;
         }
@@ -447,9 +425,9 @@ class Parser{
         var variable = this.match(VARIABLE);
         if (this.check(IS)){
             var is = this.match(IS);
-            var primary = this.primary();
+            var expression = this.expression();
             is.left = variable;
-            is.right = primary;
+            is.right = expression;
             //x is 3
 
             //once you've set one default parameter value, all following parameters must have default value
@@ -576,6 +554,12 @@ class Parser{
         return this.check(OPAREN) || this.primaryPending();
     }
 
+    private opt_expression(): Lexeme{
+        if (this.expressionPending())
+            return this.expression();
+        return undefined;
+    }
+
     private opt_expression_rhs(): Lexeme{
         if (this.op_two_paramsPending()){
             var op = this.op_two_params();
@@ -622,14 +606,7 @@ class Parser{
     }
 
     private assignment(): Lexeme{
-        var temp = this.opt_my();
-        var variable = this.match(VARIABLE);
-        var opt_obj_access = this.opt_obj_access();
-        variable.right = opt_obj_access;
-        if (temp !== undefined){
-            temp.right = variable;
-            variable = temp;
-        }
+        var variable = this.var_primary();
         var assignment_op = this.assignment_op();
         assignment_op.left = variable;
         assignment_op.right = this.expression();
@@ -675,7 +652,7 @@ class Parser{
         var if_test = new Lexeme(IF_TEST);
         if_.left = if_test;
 
-        var boolean = this.primary();
+        var boolean = this.expression();
         if_test.left = boolean;
         var block = this.block();
         if_test.right = block;
@@ -717,25 +694,29 @@ class Parser{
             var statements = this.statement_list();
             this.opt_newline();
             var end_ = this.match(END);
-            return statements;
+
+            do_.left = statements;
+            return do_;
         }else{
-            return this.statement();
+            var do_ = new Lexeme(DO);
+            do_.left = this.statement();
+            return do_;
         }
     }
     private blockPending(): boolean{
         this.opt_newline();
-        return this.check(DO);
+        return this.check(DO) || this.statementPending();
     }
 
     private while_statement(): Lexeme{
         var while_ = this.match(WHILE);
-        var primary = this.match(primary);
+        var expression = this.expression();
         var block = this.block();
         while_.left = primary;
         while_.right = block;
 
         var statement_end = new Lexeme(NEWLINE);
-        statement_end.left = while_statement;
+        statement_end.left = while_;
         return statement_end;
     }
     private while_statementPending(): boolean{
@@ -744,8 +725,8 @@ class Parser{
 
     private print_statement(): Lexeme{
         var print = this.match(PRINT);
-        var primary = this.primary();
-        print.right = primary;
+        var expression = this.expression();
+        print.right = expression;
         var statement_end = this.statement_end();
         statement_end.left = print;
         return statement_end;
@@ -754,14 +735,14 @@ class Parser{
         return this.check(PRINT);
     }
 
-    private primary_statement(): Lexeme{
-        var primary = this.opt_primary();
+    private expression_statement(): Lexeme{
+        var expression = this.opt_expression();
         var statement_end = this.statement_end();
-        statement_end.left = primary;
+        statement_end.left = expression;
         return statement_end;
     }
-    private primary_statementPending(): boolean{
-        return this.primaryPending();
+    private expression_statementPending(): boolean{
+        return this.expressionPending();
     }
 
     private import_statement(): Lexeme{
@@ -834,8 +815,8 @@ class Parser{
             return this.print_statement();
         if (this.assignment_statementPending())
             return this.assignment_statement();
-        if (this.primary_statementPending())
-            return this.primary_statement();
+        if (this.expression_statementPending())
+            return this.expression_statement();
         if (this.class_def_statementPending())
             return this.class_def_statement();
         if (this.import_statementPending())
@@ -844,7 +825,7 @@ class Parser{
     private statementPending(): boolean{
         return this.if_statementPending() || this.while_statementPending() ||
             this.print_statementPending() || this.assignment_statementPending() ||
-            this.primary_statementPending() || this.class_def_statementPending() ||
+            this.expression_statementPending() || this.class_def_statementPending() ||
             this.import_statementPending();
     }
 

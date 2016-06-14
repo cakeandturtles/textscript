@@ -2,13 +2,15 @@ function main() {
     var program_run = document.getElementById("program_run");
     program_run.onclick = runProgram;
 }
-var parser;
+var parser, evaluator;
 function runProgram() {
     var program_txt_element = document.getElementById("program_txt");
     var program_txt = program_txt_element.value;
     parser = new Parser();
-    parser.parse(program_txt);
-    parser.prettyPrint();
+    var root = parser.parse(program_txt);
+    PrettyPrinter.prettyPrint(root);
+    evaluator = new Evaluator();
+    evaluator.eval(root);
 }
 function print(value) {
     console.log(value);
