@@ -226,8 +226,7 @@ var Parser = (function () {
     };
     Parser.prototype.var_func_call = function () {
         var tree = this.match(CALL);
-        tree.left = this.match(VARIABLE);
-        tree.left.right = this.opt_var();
+        tree.left = this.var_primary();
         tree.right = this.opt_with_call();
         return tree;
     };

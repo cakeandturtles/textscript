@@ -154,6 +154,56 @@ class Evaluator{
         return tree.type == NUMBER || tree.type == NEGATIVE;
     }
 
+    private eval_var_primary(tree: Lexeme, env: Environment): any{
+        var env_and_var_name = this.getEnvironmentAndVarNameFromVarTree(tree, env);
+        env = env_and_var_name[0];
+        var var_name = env_and_var_name[1];
+        return env[var_name];
+    }
+    private var_primaryPending(tree: Lexeme): boolean{
+        var type = tree.type;
+        return type == MY || type == VARIABLE;
+    }
+
+    private eval_var_func_call(tree: Lexeme, env: Environment){
+        this.match(tree, CALL);
+        var var_primary = tree.left;
+        var arguments = tree.right;
+
+        var closure = this.getEnvValue(var_primary, env);
+        var params = closure.params;
+        var body = closure.body;
+        var closure_env = closure.env;
+        var evaluated_args = this.eval_args(arguments);
+        closure_env = this.extend_env(closure_env, params, evaluated_args);
+    }
+    private var_func_callPending(tree:Lexeme): boolean{
+        return tree.type == CALL;
+    }
+
+    /********************************** FUNC DEF &&&&&&&&&&&&&&&&&&&&&&&&&&*/
+    private eval_func_primary(tree: Lexeme, env: Environment): any{
+        var is_static = false;
+        if (tree.type == STATIC_FUNC_DEF)
+            is_static = true;
+        else this.match(tree, FUNC_DEF);
+
+        var signature = tree.left;
+        var func_name = signature.left;
+        var params = signature.right;
+        var body = tree.right;
+
+        var closure = new Closure(env, params, body);
+        if (func_name !== undefined)
+            this.setEnvValue(func_name, closure, env);
+
+        return closure;
+    }
+    private func_primaryPending(tree: Lexeme){
+        return tree.type == STATIC_FUNC_DEF || tree.type == FUNC_DEF;
+    }
+
+
     /********************************** EXPRESSIONS &&&&&&&&&&&&&&&&&&&&&&&&&&*/
     private eval_expression(tree: Lexeme, env: Environment): any{
         if (this.op_one_paramPending(tree)){

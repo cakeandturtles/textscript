@@ -88,3 +88,4 @@ const NEGATIVE: string = "NEGATIVE";
 const LIST: string = "LIST";
 const DICT: string = "DICT";
 const STATEMENT_END: string = "STATEMENT_END";
+const CLOSURE: string = "CLOSURE";

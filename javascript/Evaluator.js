@@ -138,6 +138,48 @@ var Evaluator = (function () {
     Evaluator.prototype.num_primaryPending = function (tree) {
         return tree.type == NUMBER || tree.type == NEGATIVE;
     };
+    Evaluator.prototype.eval_var_primary = function (tree, env) {
+        var env_and_var_name = this.getEnvironmentAndVarNameFromVarTree(tree, env);
+        env = env_and_var_name[0];
+        var var_name = env_and_var_name[1];
+        return env[var_name];
+    };
+    Evaluator.prototype.var_primaryPending = function (tree) {
+        var type = tree.type;
+        return type == MY || type == VARIABLE;
+    };
+    Evaluator.prototype.eval_var_func_call = function (tree, env) {
+        this.match(tree, CALL);
+        var var_primary = tree.left;
+        var arguments = tree.right;
+        var closure = this.getEnvValue(var_primary, env);
+        var params = closure.params;
+        var body = closure.body;
+        var closure_env = closure.env;
+        var evaluated_args = this.eval_args(arguments);
+        closure_env = this.extend_env(closure_env, params, evaluated_args);
+    };
+    Evaluator.prototype.var_func_callPending = function (tree) {
+        return tree.type == CALL;
+    };
+    Evaluator.prototype.eval_func_primary = function (tree, env) {
+        var is_static = false;
+        if (tree.type == STATIC_FUNC_DEF)
+            is_static = true;
+        else
+            this.match(tree, FUNC_DEF);
+        var signature = tree.left;
+        var func_name = signature.left;
+        var params = signature.right;
+        var body = tree.right;
+        var closure = new Closure(env, params, body);
+        if (func_name !== undefined)
+            this.setEnvValue(func_name, closure, env);
+        return closure;
+    };
+    Evaluator.prototype.func_primaryPending = function (tree) {
+        return tree.type == STATIC_FUNC_DEF || tree.type == FUNC_DEF;
+    };
     Evaluator.prototype.eval_expression = function (tree, env) {
         if (this.op_one_paramPending(tree)) {
             return this.eval_op_one_param(tree, env);

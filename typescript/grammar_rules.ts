@@ -25,7 +25,7 @@ var opt_obj_access = (APOSTROPHE_S && VARIABLE && opt_obj_access) || _empty_;
 
 var opt_var = VARIABLE || _empty_;
 
-var var_func_call = CALL && VARIABLE && opt_var && opt_with_call;
+var var_func_call = CALL && var_primary && opt_with_call;
 
 var opt_with_call = WITH && expression && opt_list_continuation;
 
