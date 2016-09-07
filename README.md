@@ -43,6 +43,9 @@ some things of note:
 
 --------------------------------------------------------------------------------
 # to do
+    -[ ] UNIT TESTS!!!! duhhhh
+    
+    
     -[x] lexing for && and || and ! (and "and" and "or" i think)
     -[x] add grammar rules for classes/objects!!!
     -[x] GRAMMAR rules for default parameter values??
